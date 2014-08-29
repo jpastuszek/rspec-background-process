@@ -9,7 +9,7 @@ module CucumberSpawnProcess
 		end
 
 		def define(name, path, type)
-			fail "process #{name} already defined (#{@definitions[name]})" if @definitions.member? name
+			fail "process #{name} already defined (#{@definitions[name]})" if @definitions.member? name and @definitions[name] != {path: path, type: type}
 			@definitions[name] = {path: path, type: type}
 		end
 

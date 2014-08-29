@@ -2,7 +2,7 @@
 
 puts 'hello world'
 STDOUT.flush
-sleep 1
+sleep 2
 puts 'ready'
 STDOUT.flush
 sleep 10

@@ -28,10 +28,13 @@ module CucumberSpawnProcess
 			@working_directory.directory? or @working_directory.mkdir
 
 			@pid_file = @working_directory + "#{@name}.pid"
+			@pid_file.file? and @pid_file.unlink
+
 			@log_file = @working_directory + "#{@name}.log"
+			@log_file.file? and @log_file.unlink
 
 			@ready = ->(_){true}
-			@refresh = ->{restart}
+			@refresh = ->(_){restart}
 
 			@ready_timeout = 10
 
@@ -52,7 +55,7 @@ module CucumberSpawnProcess
 		end
 
 		def log_file?
-			log_file.file?
+			log_file.file? and pid_file.read.strip.to_i != 0
 		end
 
 		def pid
@@ -74,7 +77,7 @@ module CucumberSpawnProcess
 
 		def refresh
 			puts "refreshing"
-			@refresh and @refresh.call(self)
+			@refresh.call(self)
 			if not ready?
 				puts "not working after refresh: restarting"
 				start
@@ -96,16 +99,16 @@ module CucumberSpawnProcess
 
 		def start
 			puts "starting"
-			return if pid_file? and ready?
+			return pid if pid_file? and ready?
 
 			spawn
 
-			ppid, _ = Process.wait
+			Process.wait
 			Timeout.timeout(4) do
 				sleep 0.1 until pid_file?
 			end
 
-			puts "#{self} started with pid: #{ppid}; log file: #{log_file}"
+			puts "#{self} started with pid: #{pid}; log file: #{log_file}"
 
 			### Note that the process is disconnected so kill(0,) or wait(pid) won't work
 			### Also pid_file may not exist yet or may not be locked yet
@@ -113,6 +116,8 @@ module CucumberSpawnProcess
 			Timeout.timeout(@ready_timeout) do
 				sleep 0.1 until ready?
 			end
+
+			return pid
 		rescue Errno::ESRCH
 			puts "exited; see #{log_file} for detail"
 			raise

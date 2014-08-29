@@ -24,3 +24,23 @@ Feature: Spawning of background process
 		Given test2 process readiness timeout is 0.1 second
 		And test2 process is ready when log file contains ready
 		Then test2 process should fail to start in time
+
+	Scenario: Process is started once
+		Given test process is ready when log file contains hello world
+		And test process is running
+		And we remember test process pid
+		Given test process is ready when log file contains ready
+		And test process is running
+		Then test process log should contain ready
+		And test process pid should be as remembered
+
+
+	Scenario: Process refreshing
+		Given test process is ready when log file contains hello world
+		And test process is running
+		And we remember test process pid
+		Given test process is ready when log file contains ready
+		And test process is refreshed
+		Then test process log should contain ready
+		And test process pid should be different than remembered
+
