@@ -14,6 +14,10 @@ Given /^([^ ]+) process is running$/ do |name|
 	_process_pool.get(name, @process_arguments[name]).start
 end
 
+Given /^([^ ]+) process readiness timeout is (.*) seconds?$/ do |name, seconds|
+	_process_pool.get(name, @process_arguments[name]).ready_timeout = seconds.to_f
+end
+
 Given /^([^ ]+) process is ready when log file contains (.*)/ do |name, log_line|
 	_process_pool.get(name, @process_arguments[name]).ready_when do |process|
 		process.log_file.open do |log|
@@ -32,6 +36,14 @@ end
 
 Then /^([^ ]+) process log should contain (.*)/ do |name, log_line|
 	_process_pool.get(name, @process_arguments[name]).log_file.read.should include log_line
+end
+
+# used for testing internaly but my come handy
+
+Then /^([^ ]+) process should fail to start in time$/ do |name|
+	expect {
+		step "#{name} process is running"
+	}.to raise_error Timeout::Error
 end
 
 Then /^kill myself/ do

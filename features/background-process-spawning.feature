@@ -5,6 +5,7 @@ Feature: Spawning of background process
 
 	Background:
 		Given test background process executable is features/support/test_process
+		Given test2 background process executable is features/support/test_process
 
 	Scenario: Starting a background process
 		Given test process is running
@@ -13,5 +14,13 @@ Feature: Spawning of background process
 
 	Scenario: Starting a background process with readiness check
 		Given test process is ready when log file contains hello world
-		Given test process is running
+		And test process is running
 		Then test process log should contain hello world
+
+	Scenario: Starting a background process with readiness check timeout
+		Given test process is ready when log file contains ready
+		And test process is running
+		Then test process log should contain ready
+		Given test2 process readiness timeout is 0.1 second
+		And test2 process is ready when log file contains ready
+		Then test2 process should fail to start in time

@@ -33,7 +33,6 @@ module CucumberSpawnProcess
 			@ready = ->(_){true}
 			@refresh = ->{restart}
 
-			# TODO: parametrize
 			@ready_timeout = 10
 
 			# make sure we stop on exit
@@ -46,7 +45,7 @@ module CucumberSpawnProcess
 		attr_reader :name
 		attr_reader :pid_file
 		attr_reader :log_file
-		attr_reader :ready_timeout
+		attr_accessor :ready_timeout
 
 		def pid_file?
 			pid_file.file?
