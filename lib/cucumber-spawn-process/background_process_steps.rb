@@ -14,6 +14,18 @@ Given /^([^ ]+) process is running$/ do |name|
 	_process_pool.get(name, @process_arguments[name]).start
 end
 
+Given /^([^ ]+) process is ready when log file contains (.*)/ do |name, log_line|
+	_process_pool.get(name, @process_arguments[name]).ready_when do |process|
+		process.log_file.open do |log|
+			loop do
+				line = log.gets and line.include?(log_line) and break
+				sleep 0.1
+			end
+			true
+		end
+	end
+end
+
 Given /^I wait ([^ ]+) seconds for process to settle$/ do |seconds|
 	sleep seconds.to_f
 end

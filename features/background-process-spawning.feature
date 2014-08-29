@@ -6,7 +6,12 @@ Feature: Spawning of background process
 	Background:
 		Given test background process executable is features/support/test_process
 
-  Scenario: Starting a background process
-    Given test process is running
-	  And I wait 0.4 seconds for process to settle
-	  Then test process log should contain hello world
+	Scenario: Starting a background process
+		Given test process is running
+		And I wait 0.4 seconds for process to settle
+		Then test process log should contain hello world
+
+	Scenario: Starting a background process with readiness check
+		Given test process is ready when log file contains hello world
+		Given test process is running
+		Then test process log should contain hello world

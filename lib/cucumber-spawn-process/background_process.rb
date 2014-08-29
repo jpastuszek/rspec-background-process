@@ -30,8 +30,11 @@ module CucumberSpawnProcess
 			@pid_file = @working_directory + "#{@name}.pid"
 			@log_file = @working_directory + "#{@name}.log"
 
-			@check = ->(_){true}
+			@ready = ->(_){true}
 			@refresh = ->{restart}
+
+			# TODO: parametrize
+			@ready_timeout = 10
 
 			# make sure we stop on exit
 			my_pid = Process.pid
@@ -43,6 +46,7 @@ module CucumberSpawnProcess
 		attr_reader :name
 		attr_reader :pid_file
 		attr_reader :log_file
+		attr_reader :ready_timeout
 
 		def pid_file?
 			pid_file.file?
@@ -61,14 +65,18 @@ module CucumberSpawnProcess
 			Shellwords.join([@cmd, *@args])
 		end
 
-		def check?
-			@check.call(self)
+		def ready?
+			@ready.call(self)
+		end
+
+		def ready_when(&block)
+			@ready = block
 		end
 
 		def refresh
 			puts "refreshing"
 			@refresh and @refresh.call(self)
-			if not check?
+			if not ready?
 				puts "not working after refresh: restarting"
 				start
 			end
@@ -89,7 +97,7 @@ module CucumberSpawnProcess
 
 		def start
 			puts "starting"
-			return if pid_file? and check?
+			return if pid_file? and ready?
 
 			spawn
 
@@ -102,9 +110,9 @@ module CucumberSpawnProcess
 
 			### Note that the process is disconnected so kill(0,) or wait(pid) won't work
 			### Also pid_file may not exist yet or may not be locked yet
-			### The only option is to wait for user provided check? to return true
-			Timeout.timeout(10) do
-				sleep 0.1 until check?
+			### The only option is to wait for user provided ready? to return true
+			Timeout.timeout(@ready_timeout) do
+				sleep 0.1 until ready?
 			end
 		rescue Errno::ESRCH
 			puts "exited; see #{log_file} for detail"
