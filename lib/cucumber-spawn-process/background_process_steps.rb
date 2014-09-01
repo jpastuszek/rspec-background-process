@@ -10,6 +10,11 @@ Given /^([^ ]+) background process executable is (.*)$/ do |name, path|
 	(@process_arguments ||= {})[name] = []
 end
 
+Given /^([^ ]+) background process ruby script is (.*)$/ do |name, path|
+	_process_pool.define(name, path, CucumberSpawnProcess::LoadedBackgroundProcess)
+	(@process_arguments ||= {})[name] = []
+end
+
 Given /^([^ ]+) process is running$/ do |name|
 	_process_pool.get(name, @process_arguments[name]).start
 end

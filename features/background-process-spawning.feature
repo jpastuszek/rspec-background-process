@@ -6,10 +6,11 @@ Feature: Spawning of background process
 	Background:
 		Given test background process executable is features/support/test_process
 		Given test2 background process executable is features/support/test_process
+		Given test-loaded background process ruby script is features/support/test_process
 
 	Scenario: Starting a background process
 		Given test process is running
-		And I wait 0.4 seconds for process to settle
+		And I wait 1 seconds for process to settle
 		Then test process log should contain hello world
 
 	Scenario: Starting a background process with readiness check
@@ -34,7 +35,6 @@ Feature: Spawning of background process
 		Then test process log should contain ready
 		And test process pid should be as remembered
 
-
 	Scenario: Process refreshing
 		Given test process is ready when log file contains hello world
 		And test process is running
@@ -43,4 +43,9 @@ Feature: Spawning of background process
 		And test process is refreshed
 		Then test process log should contain ready
 		And test process pid should be different than remembered
+
+	Scenario: Loading a background process
+		Given test-loaded process is running
+		And I wait 1 seconds for process to settle
+		Then test-loaded process log should contain ENV['ARGV']
 
