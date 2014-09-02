@@ -19,8 +19,25 @@ Given /^([^ ]+) background process ruby script is (.*)$/ do |name, path|
 	(@process_arguments ||= {})[name] = []
 end
 
+
+Given /^([^ ]+) process readiness timeout is (.*) seconds?$/ do |name, seconds|
+	_process_pool.options(name, ready_timeout: seconds.to_f)
+end
+
+Given /^([^ ]+) process termination timeout is (.*) seconds?$/ do |name, seconds|
+	_process_pool.options(name, term_timeout: seconds.to_f)
+end
+
+Given /^([^ ]+) process kill timeout is (.*) seconds?$/ do |name, seconds|
+	_process_pool.options(name, kill_timeout: seconds.to_f)
+end
+
 Given /^([^ ]+) process is running$/ do |name|
 	_process(name).start
+end
+
+When /^([^ ]+) process is stopped$/ do |name|
+	_process(name).stop
 end
 
 Given /^([^ ]+) process is ready$/ do |name|
@@ -34,10 +51,6 @@ end
 
 Given /^([^ ]+) process is refreshed$/ do |name|
 	_process(name).refresh.verify
-end
-
-Given /^([^ ]+) process readiness timeout is (.*) seconds?$/ do |name, seconds|
-	_process(name).ready_timeout = seconds.to_f
 end
 
 Given /^([^ ]+) process is ready when log file contains (.*)/ do |name, log_line|
@@ -84,6 +97,26 @@ Then /^([^ ]+) process should be dead/ do |name|
 	_process(name).should be_dead
 end
 
+Then /^([^ ]+) process should not be dead/ do |name|
+	_process(name).should_not be_dead
+end
+
+Then /^([^ ]+) process should be failed/ do |name|
+	_process(name).should be_failed
+end
+
+Then /^([^ ]+) process should not be failed/ do |name|
+	_process(name).should_not be_failed
+end
+
+Then /^([^ ]+) process should be jammed/ do |name|
+	_process(name).should be_jammed
+end
+
+Then /^([^ ]+) process should not be jammed/ do |name|
+	_process(name).should_not be_jammed
+end
+
 Then /^([^ ]+) exit code should be (\d+)$/ do |name, exit_code|
 	_process(name).exit_code.should_not be_nil
 	_process(name).exit_code.should == exit_code.to_i
@@ -101,6 +134,12 @@ Then /^([^ ]+) process should fail to become ready in time$/ do |name|
 	expect {
 		step "#{name} process is ready"
 	}.to raise_error Timeout::Error
+end
+
+Then /^([^ ]+) process should fail to stop$/ do |name|
+	expect {
+		step "#{name} process is stopped"
+	}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessRunAwayError
 end
 
 Given /we remember ([^ ]+) process pid/ do |name|

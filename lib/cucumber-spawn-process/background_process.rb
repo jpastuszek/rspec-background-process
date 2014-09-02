@@ -45,7 +45,6 @@ module CucumberSpawnProcess
 			@term_timeout = options[:term_timeout] || 10
 			@kill_timeout = options[:kill_timeout] || 10
 
-
 			@fsm_lock = Mutex.new
 
 			@_fsm = MicroMachine.new(:not_running)
@@ -70,6 +69,10 @@ module CucumberSpawnProcess
 				ready: :dead
 			)
 
+			@_fsm.when(:failed,
+				not_running: :failed
+			)
+
 			@_fsm.when(:verified,
 				running: :ready,
 				ready: :ready,
@@ -89,9 +92,9 @@ module CucumberSpawnProcess
 		attr_reader :name
 		attr_reader :pid_file
 		attr_reader :log_file
-		attr_accessor :ready_timeout
-		attr_accessor :term_timeout
-		attr_accessor :kill_timeout
+		attr_reader :ready_timeout
+		attr_reader :term_timeout
+		attr_reader :kill_timeout
 
 		def pid
 			@pid if running?
@@ -111,6 +114,14 @@ module CucumberSpawnProcess
 
 		def dead?
 			state == :dead
+		end
+
+		def failed?
+			state == :failed
+		end
+
+		def jammed?
+			state == :jammed
 		end
 
 		def state
@@ -159,13 +170,17 @@ module CucumberSpawnProcess
 
 			catch :done do
 				begin
-					puts "stopping process: #{@pid}"
-					Process.kill("TERM", @pid)
-					@process.join(@term_timeout) and throw :done
+					if @term_timeout > 0
+						puts "terminating process: #{@pid}"
+						Process.kill("TERM", @pid)
+						@process.join(@term_timeout) and throw :done
+					end
 
-					puts "killing process: #{@pid}"
-					Process.kill("KILL", @pid)
-					@process.join(@kill_timeout) and throw :done
+					if @kill_timeout > 0
+						puts "killing process: #{@pid}"
+						Process.kill("KILL", @pid)
+						@process.join(@kill_timeout) and throw :done
+					end
 				rescue Errno::ESRCH
 					throw :done
 				end
@@ -186,26 +201,28 @@ module CucumberSpawnProcess
 			status = while_running do
 				begin
 					Timeout.timeout(@ready_timeout) do
-						loop do
-							break if @ready_test.call(self)
-							sleep 0.1
-						end
+						@ready_test.call(self) ? :ready : :failed
 					end
 				rescue Timeout::Error
 					:ready_timeout
-				else
-					:ready
 				end
 			end
 
-			if status == :ready_timeout
+			case status
+			when :failed
+				puts "process failed to pass it's readiness test"
+				stop
+				trigger :failed
+				raise ProcessReadyTimeOutError.new(self.to_s)
+			when :ready_timeout
 				puts "process not ready in time; see #{log_file} for detail"
 				stop
+				trigger :failed
 				raise ProcessReadyTimeOutError.new(self.to_s)
+			else
+				trigger :verified
+				self
 			end
-
-			trigger :verified
-			self
 		end
 
 		def puts(message)

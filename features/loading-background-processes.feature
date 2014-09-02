@@ -3,10 +3,10 @@ Feature: Loading background processes
 	This optimisation allows to load ruby script directly into forked process passing arguments via ENV['ARGV'].
 
 	Background:
-		Given test background process ruby script is features/support/test_process
+		Given loaded background process ruby script is features/support/test_process
 
 	Scenario: Loading a background process
-		Given test process is running
+		Given loaded process is running
 		And I wait 1 seconds for process to settle
-		Then test process log should contain ENV['ARGV']
+		Then loaded process log should contain ENV['ARGV']
 
