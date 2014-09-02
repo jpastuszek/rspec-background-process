@@ -36,6 +36,7 @@ GEM
       rdoc
     json (1.8.1)
     jwt (1.0.0)
+    micromachine (1.1.0)
     multi_json (1.10.1)
     multi_test (0.1.1)
     multi_xml (0.5.5)
@@ -69,4 +70,5 @@ DEPENDENCIES
   daemon (~> 1.2)
   faraday (>= 0.8)
   jeweler (~> 1.8.4)
+  micromachine (~> 1.1)
   rspec (~> 2.13)
