@@ -45,33 +45,36 @@ module CucumberSpawnProcess
 			@term_timeout = options[:term_timeout] || 10
 			@kill_timeout = options[:kill_timeout] || 10
 
-			@fsm = MicroMachine.new(:not_running)
-			@fsm.on(:any) do
-				puts "process is now #{@fsm.state}"
+
+			@fsm_lock = Mutex.new
+
+			@_fsm = MicroMachine.new(:not_running)
+			@_fsm.on(:any) do
+				puts "process is now #{@_fsm.state}"
 			end
 
-			@fsm.when(:started,
+			@_fsm.when(:started,
 				not_running: :running
 			)
-			@fsm.on(:running) do
+			@_fsm.on(:running) do
 				puts "running with pid: #{@pid}, log file: #{@log_file}"
 			end
 
-			@fsm.when(:stopped,
-				running: :not_running,
-				ready: :not_running,
-			)
-
-			@fsm.when(:died,
+			@_fsm.when(:stopped,
 				running: :not_running,
 				ready: :not_running
 			)
 
-			@fsm.when(:verified,
+			@_fsm.when(:died,
+				running: :dead,
+				ready: :dead
+			)
+
+			@_fsm.when(:verified,
 				running: :ready,
 				ready: :ready,
 			)
-			@fsm.when(:run_away,
+			@_fsm.when(:run_away,
 				running: :jammed,
 				ready: :jammed
 			)
@@ -79,7 +82,7 @@ module CucumberSpawnProcess
 			# make sure we stop on exit
 			my_pid = Process.pid
 			at_exit do
-				stop if Process.pid == my_pid #only run in master process
+				stop if Process.pid == my_pid and running? #only run in master process
 			end
 		end
 
@@ -91,26 +94,27 @@ module CucumberSpawnProcess
 		attr_accessor :kill_timeout
 
 		def pid
-			return nil unless running?
-			@pid
+			@pid if running?
 		end
 
 		def exit_code
-			return nil if not @process
-			return nil if running?
-			@process.value.exitstatus
+			@process.value.exitstatus if not running? and @process
 		end
 
 		def running?
-			@fsm.trigger? :stopped # if it can be stopped it must be running :D
+			trigger? :stopped # if it can be stopped it must be running :D
 		end
 
 		def ready?
-			@fsm.state == :ready
+			state == :ready
+		end
+
+		def dead?
+			state == :dead
 		end
 
 		def state
-			@fsm.state
+			lock_fsm{|fsm| fsm.state }
 		end
 
 		def ready_when(&block)
@@ -131,17 +135,51 @@ module CucumberSpawnProcess
 		end
 
 		def start
-			return self if @fsm.trigger? :stopped
-			@fsm.trigger? :started or fail "can't start when: #{@fsm.state}"
+			return self if trigger? :stopped
+			trigger? :started or fail "can't start when: #{state}"
 
 			puts 'starting'
 			@pid, @process = spawn
-			@fsm.trigger :started
+
+			@process_watcher = Thread.new do
+				@process.join
+				trigger :died
+			end
+
+			trigger :started
 			self
 		end
 
+		def stop
+			return if trigger? :started
+			trigger? :stopped or fail "can't stop while: #{state}"
+
+			# get rid of the watcher thread
+			@process_watcher and @process_watcher.kill
+
+			catch :done do
+				begin
+					puts "stopping process: #{@pid}"
+					Process.kill("TERM", @pid)
+					@process.join(@term_timeout) and throw :done
+
+					puts "killing process: #{@pid}"
+					Process.kill("KILL", @pid)
+					@process.join(@kill_timeout) and throw :done
+				rescue Errno::ESRCH
+					throw :done
+				end
+
+				trigger :run_away
+				raise ProcessRunAwayError.new(self.to_s, @pid)
+			end
+
+			trigger :stopped
+			nil
+		end
+
 		def verify
-			@fsm.trigger? :verified or fail "can't verify when: #{@fsm.state}"
+			trigger? :verified or fail "can't verify when: #{state}"
 
 			puts 'verifying'
 
@@ -161,38 +199,13 @@ module CucumberSpawnProcess
 			end
 
 			if status == :ready_timeout
-				puts "failed to start in time; see #{log_file} for detail"
+				puts "process not ready in time; see #{log_file} for detail"
 				stop
 				raise ProcessReadyTimeOutError.new(self.to_s)
 			end
 
-			@fsm.trigger :verified
+			trigger :verified
 			self
-		end
-
-		def stop
-			return if @fsm.trigger? :started
-			@fsm.trigger? :stopped or fail "can't stop while: #{@fsm.state}"
-
-			catch :done do
-				begin
-					puts "stopping process: #{@pid}"
-					Process.kill("TERM", @pid)
-					@process.join(@term_timeout) and throw :done
-
-					puts "killing process: #{@pid}"
-					Process.kill("KILL", @pid)
-					@process.join(@kill_timeout) and throw :done
-				rescue Errno::ESRCH
-					throw :done
-				end
-
-				@fsm.trigger :run_away
-				raise ProcessRunAwayError.new(self.to_s, @pid)
-			end
-
-			@fsm.trigger :stopped
-			nil
 		end
 
 		def puts(message)
@@ -204,6 +217,18 @@ module CucumberSpawnProcess
 		end
 
 		private
+
+		def lock_fsm
+			@fsm_lock.synchronize{yield @_fsm}
+		end
+
+		def trigger(change)
+			lock_fsm{|fsm| fsm.trigger(change)}
+		end
+
+		def trigger?(change)
+			lock_fsm{|fsm| fsm.trigger?(change)}
+		end
 
 		def spawn
 			Daemon.daemonize(@pid_file, @log_file) do |log|
@@ -225,7 +250,7 @@ module CucumberSpawnProcess
 			case value
 			when Process::Status
 				puts "process exited; see #{log_file} for detail"
-				@fsm.trigger :died
+				trigger :died
 				raise ProcessExitedError.new(self.to_s, exit_code)
 			when Exception
 				raise value

@@ -20,7 +20,16 @@ Given /^([^ ]+) background process ruby script is (.*)$/ do |name, path|
 end
 
 Given /^([^ ]+) process is running$/ do |name|
-	_process(name).start.verify
+	_process(name).start
+end
+
+Given /^([^ ]+) process is ready$/ do |name|
+	_process(name).verify
+end
+
+Given /^([^ ]+) process is running and ready$/ do |name|
+	step "#{name} process is running"
+	step "#{name} process is ready"
 end
 
 Given /^([^ ]+) process is refreshed$/ do |name|
@@ -71,6 +80,10 @@ Then /^([^ ]+) process should not be ready/ do |name|
 	_process(name).should_not be_ready
 end
 
+Then /^([^ ]+) process should be dead/ do |name|
+	_process(name).should be_dead
+end
+
 Then /^([^ ]+) exit code should be (\d+)$/ do |name, exit_code|
 	_process(name).exit_code.should_not be_nil
 	_process(name).exit_code.should == exit_code.to_i
@@ -84,9 +97,9 @@ Given /^([^ ]+) process exits prematurely/ do |name|
 	}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessExitedError
 end
 
-Then /^([^ ]+) process should fail to start in time$/ do |name|
+Then /^([^ ]+) process should fail to become ready in time$/ do |name|
 	expect {
-		step "#{name} process is running"
+		step "#{name} process is ready"
 	}.to raise_error Timeout::Error
 end
 
