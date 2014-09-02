@@ -27,8 +27,7 @@ module CucumberSpawnProcess
 
 		def initialize(name, cmd, args = [], working_directory = Dir.mktmpdir(name), options = {})
 			@name = name
-			@cmd = cmd
-			@args = args
+			@command = Shellwords.join([cmd, *args])
 
 			@pid = nil
 			@process = nil
@@ -48,7 +47,7 @@ module CucumberSpawnProcess
 
 			@fsm = MicroMachine.new(:not_running)
 			@fsm.on(:any) do
-				puts "current state: #{@fsm.state}"
+				puts "process is now #{@fsm.state}"
 			end
 
 			@fsm.when(:started,
@@ -88,10 +87,8 @@ module CucumberSpawnProcess
 		attr_reader :pid_file
 		attr_reader :log_file
 		attr_accessor :ready_timeout
-
-		def command
-			Shellwords.join([@cmd, *@args])
-		end
+		attr_accessor :term_timeout
+		attr_accessor :kill_timeout
 
 		def pid
 			return nil unless running?
@@ -203,7 +200,7 @@ module CucumberSpawnProcess
 		end
 
 		def to_s
-			"#{name}[#{command}](#{state})"
+			"#{name}[#{@command}](#{state})"
 		end
 
 		private
@@ -211,7 +208,7 @@ module CucumberSpawnProcess
 		def spawn
 			Daemon.daemonize(@pid_file, @log_file) do |log|
 				log.truncate(0)
-				exec(command)
+				exec(@command)
 			end
 		end
 
@@ -244,7 +241,7 @@ module CucumberSpawnProcess
 		# cmd will be loaded in forked ruby interpreter and arguments passed via ENV['ARGS']
 		# This way starting new process will be much faster since ruby VM is already loaded
 		def spawn
-			cmd = Shellwords.split(command)
+			cmd = Shellwords.split(@command)
 			file = cmd.shift
 
 			puts "loading ruby script: #{file}"
