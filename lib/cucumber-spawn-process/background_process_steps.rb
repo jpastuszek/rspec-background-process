@@ -117,83 +117,81 @@ Given /^I wait ([^ ]+) seconds for process to settle$/ do |seconds|
 end
 
 Then /^([^ ]+) process log should contain (.*)/ do |name, log_line|
-	_process(name).log_file.readlines.map(&:strip).should include log_line
-	#_process(name).log_file.open{|file| file.any?{|line| line.strip.include? log_line}.should be_truthy}
-	#expect(["barn", 2.45]).to include( a_string_starting_with("bar") )
-#
-	#_process(name).log_file.open do |file|
-		#expect(file.readlines)
-		#.to include(
-			#include(log_line)
-		#)
-	#end
+	expect(_process(name).log_file.readlines).to include(
+		a_string_including(log_line)
+	)
 end
 
 Then /^([^ ]+) process log should not contain (.*)/ do |name, log_line|
-	_process(name).log_file.readlines.map(&:strip).should_not include log_line
+	expect(_process(name).log_file.readlines).to_not include(
+		a_string_including(log_line)
+	)
 end
 
 Then /^([^ ]+) process log should match (.*)/ do |name, regexp|
-	_process(name).log_file.readlines.map(&:strip).grep(Regexp.new(regexp)).should_not be_empty
+	expect(_process(name).log_file.readlines).to include(
+		a_string_matching(Regexp.new regexp)
+	)
 end
 
 Then /^([^ ]+) process log should not match (.*)/ do |name, regexp|
-	_process(name).log_file.readlines.map(&:strip).grep(Regexp.new(regexp)).should be_empty
+	expect(_process(name).log_file.readlines).to_not include(
+		a_string_matching(Regexp.new regexp)
+	)
 end
 
 Then /^([^ ]+) process should be running/ do |name|
-	_process(name).should be_running
+	expect(_process(name)).to be_running
 end
 
 Then /^([^ ]+) process should not be running/ do |name|
-	_process(name).should_not be_running
+	expect(_process(name)).to_not be_running
 end
 
 Then /^([^ ]+) process should be ready/ do |name|
-	_process(name).should be_ready
+	expect(_process(name)).to be_ready
 end
 
 Then /^([^ ]+) process should not be ready/ do |name|
-	_process(name).should_not be_ready
+	expect(_process(name)).to_not be_ready
 end
 
 Then /^([^ ]+) process should be dead/ do |name|
-	_process(name).should be_dead
+	expect(_process(name)).to be_dead
 end
 
 Then /^([^ ]+) process should not be dead/ do |name|
-	_process(name).should_not be_dead
+	expect(_process(name)).to_not be_dead
 end
 
 Then /^([^ ]+) process should be failed/ do |name|
-	_process(name).should be_failed
+	expect(_process(name)).to be_failed
 end
 
 Then /^([^ ]+) process should not be failed/ do |name|
-	_process(name).should_not be_failed
+	expect(_process(name)).to_not be_failed
 end
 
 Then /^([^ ]+) process should be jammed/ do |name|
-	_process(name).should be_jammed
+	expect(_process(name)).to be_jammed
 end
 
 Then /^([^ ]+) process should not be jammed/ do |name|
-	_process(name).should_not be_jammed
+	expect(_process(name)).to_not be_jammed
 end
 
 Then /^([^ ]+) exit code should be (\d+)$/ do |name, exit_code|
-	_process(name).exit_code.should_not be_nil
-	_process(name).exit_code.should == exit_code.to_i
+	expect(_process(name).exit_code).to eq(exit_code.to_i)
 end
 
 Then /^([^ ]+) process readiness timeout should be (.*)/ do |name, seconds|
-	_process(name).ready_timeout.should == seconds.to_f
+	expect(_process(name).ready_timeout).to eq(seconds.to_f)
 end
 
 Then /^([^ ]+) process termination timeout should be (.*)/ do |name, seconds|
-	_process(name).term_timeout.should == seconds.to_f
+	expect(_process(name).term_timeout).to eq(seconds.to_f)
 end
 
 Then /^([^ ]+) process kill timeout should be (.*)/ do |name, seconds|
-	_process(name).kill_timeout.should == seconds.to_f
+	expect(_process(name).kill_timeout).to eq(seconds.to_f)
 end

@@ -23,11 +23,11 @@ Given /we remember ([^ ]+) process pid/ do |name|
 end
 
 Then /^([^ ]+) process pid should be as remembered$/ do |name|
-	_process(name).pid.should == (@process_pids ||= {})[name]
+	expect(_process(name).pid).to eq((@process_pids ||= {})[name])
 end
 
 Then /^([^ ]+) process pid should be different than remembered$/ do |name|
-	_process(name).pid.should_not == (@process_pids ||= {})[name]
+	expect(_process(name).pid).to_not eq((@process_pids ||= {})[name])
 end
 
 Then /^kill myself/ do
@@ -43,11 +43,11 @@ Given /^file (.*) does not exist$/ do |file|
 end
 
 Then /^file (.*) should exist$/ do |file|
-	Pathname.new(file).should be_file
+	expect(Pathname.new(file)).to be_file
 end
 
 Then /^file (.*) should not exist$/ do |file|
-	Pathname.new(file).should_not be_file
+	expect(Pathname.new(file)).to_not be_file
 end
 
 Given /^file (.*) content is (.*)/ do |file, content|
@@ -74,7 +74,7 @@ Given /^we remember current working directory$/ do
 end
 
 And /^current working directory is unchanged$/ do
-	Dir.pwd.should == @cwd
+	expect(Dir.pwd).to eq(@cwd)
 end
 
 When /^we remember ([^ ]+) process reported current directory$/ do |name|
@@ -82,6 +82,6 @@ When /^we remember ([^ ]+) process reported current directory$/ do |name|
 end
 
 When /^remembered process current directory is different from ([^ ]+) process reported one/ do |name|
-	_process(name).log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first.should_not == @process_cwd
+	expect(_process(name).log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first).to_not eq(@process_cwd)
 end
 
