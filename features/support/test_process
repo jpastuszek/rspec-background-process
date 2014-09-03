@@ -1,7 +1,9 @@
 #!/usr/bin/env ruby
 
 puts "ARGV: #{ARGV.inspect}"
-puts "ENV['ARGV']: #{ENV['ARGV']}" if ENV['ARGV']
+puts "$0: #{$0}"
+puts "$*: #{$*.inspect}"
+puts "ENV['PROCESS_SPAWN_TYPE']: #{ENV['PROCESS_SPAWN_TYPE']}"
 
 puts 'hello world'
 

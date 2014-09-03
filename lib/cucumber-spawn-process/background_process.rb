@@ -249,6 +249,10 @@ module CucumberSpawnProcess
 		def spawn
 			Daemon.daemonize(@pid_file, @log_file) do |log|
 				log.truncate(0)
+
+				# usefull for testing
+				ENV['PROCESS_SPAWN_TYPE'] = 'exec'
+
 				exec(@command)
 			end
 		end
@@ -288,8 +292,24 @@ module CucumberSpawnProcess
 			puts "loading ruby script: #{file}"
 			Daemon.daemonize(@pid_file, @log_file) do |log|
 				log.truncate(0)
-				ENV['ARGV'] = Shellwords.join(cmd)
+
+				# reset ARGV
+				Object.instance_eval{ remove_const(:ARGV) }
+				Object.const_set(:ARGV, cmd)
+
+				# reset $0
+				$0 = file
+
+				# reset $*
+				$*.replace(cmd)
+
+				# usefull for testing
+				ENV['PROCESS_SPAWN_TYPE'] = 'load'
+
 				load file
+
+				# make sure we exit if loaded file won't
+				exit 0
 			end
 		end
 	end

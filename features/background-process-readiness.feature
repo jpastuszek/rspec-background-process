@@ -6,6 +6,7 @@ Feature: Background process readiness verification
 		Given timeout background process executable is features/support/test_process
 		Given timeout process readiness timeout is 0.1 second
 
+	@readiness
 	Scenario: Starting a background process with readiness check
 		Given test process is ready when log file contains hello world
 		And test process is running and ready
@@ -13,6 +14,7 @@ Feature: Background process readiness verification
 		Then test process should be ready
 		Then test process log should contain hello world
 
+	@readiness
 	Scenario: Starting process failing to become ready on time
 		Given timeout process is ready when log file contains ready
 		And timeout process is running
