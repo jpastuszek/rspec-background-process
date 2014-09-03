@@ -59,6 +59,16 @@ Given /^([^ ]+) process file argument (.*)/ do |name, argument|
 	_process_pool.arguments(name) << Pathname.new(argument)
 end
 
+Given /^([^ ]+) process option (.*) with value (.*)/ do |name, option, value|
+	_process_pool.arguments(name) << option
+	_process_pool.arguments(name) << value
+end
+
+Given /^([^ ]+) process option (.*) with file value (.*)/ do |name, option, value|
+	_process_pool.arguments(name) << option
+	_process_pool.arguments(name) << Pathname.new(value)
+end
+
 Given /^([^ ]+) process is running$/ do |name|
 	_process(name).start
 end

@@ -67,8 +67,13 @@ module CucumberSpawnProcess
 			arguments.each do |argument|
 				case argument
 				when Pathname
-					# use file content as part of the hash
-					hash.update argument.read
+					begin
+						# use file content as part of the hash
+						hash.update argument.read
+					rescue Errno::ENOENT
+						# use file name if it does not exist
+						hash.update argument.to_s
+					end
 				else
 					hash.update argument.to_s
 				end

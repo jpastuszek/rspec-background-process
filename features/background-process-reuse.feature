@@ -131,3 +131,20 @@ Feature: Background process reuse through different scenarios and features
 		Given fresh test process is running and ready
 		Then test process log should contain ARGV: []
 
+	@reuse @arguments
+	Scenario: More scenario steps for specifying arguments
+		Given test process is ready when log file contains hello world
+		Given fresh test process is running and ready
+		Then test process log should contain ARGV: []
+		Given test process argument foo bar
+		And test process is running and ready
+		Then test process log should contain ARGV: ["foo bar"]
+		Given test process file argument /tmp/baz-bar
+		And test process is running and ready
+		Then test process log should contain ARGV: ["foo bar", "/tmp/baz-bar"]
+		Given test process option --hello with value foo baz
+		And test process is running and ready
+		Then test process log should contain ARGV: ["foo bar", "/tmp/baz-bar", "--hello", "foo baz"]
+		Given test process option --conf with file value /tmp/bar
+		And test process is running and ready
+		Then test process log should contain ARGV: ["foo bar", "/tmp/baz-bar", "--hello", "foo baz", "--conf", "/tmp/bar"]
