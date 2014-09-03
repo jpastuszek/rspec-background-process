@@ -38,12 +38,7 @@ module CucumberSpawnProcess
 			@pid_file = @working_directory + "#{@name}.pid"
 			@log_file = @working_directory + "#{@name}.log"
 
-			@ready_test = ->(_){true}
-			@refresh = ->(_){restart}
-
-			@ready_timeout = options[:ready_timeout] || 10
-			@term_timeout = options[:term_timeout] || 10
-			@kill_timeout = options[:kill_timeout] || 10
+			reset_options(options)
 
 			@fsm_lock = Mutex.new
 
@@ -56,7 +51,7 @@ module CucumberSpawnProcess
 				not_running: :running
 			)
 			@_fsm.on(:running) do
-				puts "running with pid: #{@pid}, log file: #{@log_file}"
+				puts "running with pid: #{@pid}"
 			end
 
 			@_fsm.when(:stopped,
@@ -96,6 +91,15 @@ module CucumberSpawnProcess
 		attr_reader :term_timeout
 		attr_reader :kill_timeout
 
+		def reset_options(opts)
+			@ready_timeout = opts[:ready_timeout] || 10
+			@term_timeout = opts[:term_timeout] || 10
+			@kill_timeout = opts[:kill_timeout] || 10
+
+			@ready_test = opts[:ready_test] || ->(_){true}
+			@refresh_action = opts[:refresh_action] || ->(_){restart}
+		end
+
 		def pid
 			@pid if running?
 		end
@@ -128,14 +132,9 @@ module CucumberSpawnProcess
 			lock_fsm{|fsm| fsm.state }
 		end
 
-		def ready_when(&block)
-			@ready = false
-			@ready_test = block
-		end
-
 		def refresh
 			puts 'refreshing'
-			@refresh.call(self)
+			@refresh_action.call(self)
 			self
 		end
 
@@ -149,7 +148,7 @@ module CucumberSpawnProcess
 			return self if trigger? :stopped
 			trigger? :started or fail "can't start when: #{state}"
 
-			puts 'starting'
+			puts "starting: `#{@command}` log file: #{@log_file}"
 			@pid, @process = spawn
 
 			@process_watcher = Thread.new do
@@ -166,7 +165,7 @@ module CucumberSpawnProcess
 			trigger? :stopped or fail "can't stop while: #{state}"
 
 			# get rid of the watcher thread
-			@process_watcher and @process_watcher.kill
+			@process_watcher and @process_watcher.kill and @process_watcher.join
 
 			catch :done do
 				begin

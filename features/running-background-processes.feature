@@ -16,18 +16,6 @@ Feature: Running background processes
 		Then test process log should contain hello world
 		Then test process should be running
 
-	Scenario: Process is started once
-		And test process is running
-		And we remember test process pid
-		And test process is running
-		And test process pid should be as remembered
-
-	Scenario: Process refreshing
-		And test process is running
-		And we remember test process pid
-		And test process is refreshed
-		And test process pid should be different than remembered
-
 	Scenario: Process dying after startup becomes dead
 		Given bogus process is running
 		And I wait 1 seconds for process to settle

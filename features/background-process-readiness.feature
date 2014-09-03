@@ -14,7 +14,7 @@ Feature: Background process readiness verification
 		Then test process log should contain hello world
 
 	Scenario: Starting process failing to become ready on time
-		And timeout process is ready when log file contains ready
+		Given timeout process is ready when log file contains ready
 		And timeout process is running
 		Then timeout process should fail to become ready in time
 		Then timeout process should not be running

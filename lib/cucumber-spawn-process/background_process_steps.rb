@@ -6,7 +6,8 @@ def _process_pool
 end
 
 def _process(name)
-	_process_pool.get(name, @process_arguments[name])
+	@process_arguments ||= {}
+	_process_pool.get(name, @process_arguments[name] || [])
 end
 
 Given /^([^ ]+) background process executable is (.*)$/ do |name, path|
@@ -18,7 +19,6 @@ Given /^([^ ]+) background process ruby script is (.*)$/ do |name, path|
 	_process_pool.define(name, path, CucumberSpawnProcess::LoadedBackgroundProcess)
 	(@process_arguments ||= {})[name] = []
 end
-
 
 Given /^([^ ]+) process readiness timeout is (.*) seconds?$/ do |name, seconds|
 	_process_pool.options(name, ready_timeout: seconds.to_f)
@@ -32,8 +32,34 @@ Given /^([^ ]+) process kill timeout is (.*) seconds?$/ do |name, seconds|
 	_process_pool.options(name, kill_timeout: seconds.to_f)
 end
 
+Given /^([^ ]+) process is ready when log file contains (.*)/ do |name, log_line|
+	_process_pool.options(name,
+		ready_test: ->(process) do
+			process.log_file.open do |log|
+				loop do
+					line = log.gets and line.include?(log_line) and break
+					sleep 0.1
+				end
+				true
+			end
+		end
+	)
+end
+
+Given /^([^ ]+) process is refreshed with command (.*)/ do |name, command|
+	_process_pool.options(name,
+		refresh_action: ->(process) do
+			system command
+		end
+	)
+end
+
 Given /^([^ ]+) process is running$/ do |name|
 	_process(name).start
+end
+
+Given /^fresh ([^ ]+) process is running$/ do |name|
+	_process(name).running? ? _process(name).refresh : _process(name).start
 end
 
 When /^([^ ]+) process is stopped$/ do |name|
@@ -49,20 +75,18 @@ Given /^([^ ]+) process is running and ready$/ do |name|
 	step "#{name} process is ready"
 end
 
-Given /^([^ ]+) process is refreshed$/ do |name|
-	_process(name).refresh.verify
+Given /^fresh ([^ ]+) process is running and ready$/ do |name|
+	step "fresh #{name} process is running"
+	step "#{name} process is ready"
 end
 
-Given /^([^ ]+) process is ready when log file contains (.*)/ do |name, log_line|
-	_process(name).ready_when do |process|
-		process.log_file.open do |log|
-			loop do
-				line = log.gets and line.include?(log_line) and break
-				sleep 0.1
-			end
-			true
-		end
-	end
+Given /^([^ ]+) process is refreshed$/ do |name|
+	_process(name).refresh
+end
+
+Given /^([^ ]+) process is refreshed and ready$/ do |name|
+	step "#{name} process is refreshed"
+	step "#{name} process is ready"
 end
 
 Given /^I wait ([^ ]+) seconds for process to settle$/ do |seconds|
@@ -122,39 +146,14 @@ Then /^([^ ]+) exit code should be (\d+)$/ do |name, exit_code|
 	_process(name).exit_code.should == exit_code.to_i
 end
 
-# used for testing internally but my come handy
-
-Given /^([^ ]+) process exits prematurely/ do |name|
-	expect {
-		step "#{name} process is running"
-	}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessExitedError
+Then /^([^ ]+) process readiness timeout should be (.*)/ do |name, seconds|
+	_process(name).ready_timeout.should == seconds.to_f
 end
 
-Then /^([^ ]+) process should fail to become ready in time$/ do |name|
-	expect {
-		step "#{name} process is ready"
-	}.to raise_error Timeout::Error
+Then /^([^ ]+) process termination timeout should be (.*)/ do |name, seconds|
+	_process(name).term_timeout.should == seconds.to_f
 end
 
-Then /^([^ ]+) process should fail to stop$/ do |name|
-	expect {
-		step "#{name} process is stopped"
-	}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessRunAwayError
-end
-
-Given /we remember ([^ ]+) process pid/ do |name|
-	(@process_pids ||= {})[name] = _process(name).pid
-end
-
-Then /^([^ ]+) process pid should be as remembered$/ do |name|
-	_process(name).pid.should == (@process_pids ||= {})[name]
-end
-
-Then /^([^ ]+) process pid should be different than remembered$/ do |name|
-	_process(name).pid.should_not == (@process_pids ||= {})[name]
-end
-
-Then /^kill myself/ do
-	sleep 1
-	Process.kill(9, Process.pid)
+Then /^([^ ]+) process kill timeout should be (.*)/ do |name, seconds|
+	_process(name).kill_timeout.should == seconds.to_f
 end
