@@ -6,18 +6,15 @@ def _process_pool
 end
 
 def _process(name)
-	@process_arguments ||= {}
-	_process_pool.get(name, @process_arguments[name] || [])
+	_process_pool.get(name)
 end
 
 Given /^([^ ]+) background process executable is (.*)$/ do |name, path|
 	_process_pool.define(name, path, CucumberSpawnProcess::BackgroundProcess)
-	(@process_arguments ||= {})[name] = []
 end
 
 Given /^([^ ]+) background process ruby script is (.*)$/ do |name, path|
 	_process_pool.define(name, path, CucumberSpawnProcess::LoadedBackgroundProcess)
-	(@process_arguments ||= {})[name] = []
 end
 
 Given /^([^ ]+) process readiness timeout is (.*) seconds?$/ do |name, seconds|
@@ -52,6 +49,14 @@ Given /^([^ ]+) process is refreshed with command (.*)/ do |name, command|
 			system command
 		end
 	)
+end
+
+Given /^([^ ]+) process argument (.*)/ do |name, argument|
+	_process_pool.arguments(name) << argument
+end
+
+Given /^([^ ]+) process file argument (.*)/ do |name, argument|
+	_process_pool.arguments(name) << Pathname.new(argument)
 end
 
 Given /^([^ ]+) process is running$/ do |name|

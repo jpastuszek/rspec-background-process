@@ -27,7 +27,7 @@ module CucumberSpawnProcess
 
 		def initialize(name, cmd, args = [], working_directory = Dir.mktmpdir(name), options = {})
 			@name = name
-			@command = Shellwords.join([cmd, *args])
+			@command = Shellwords.join([cmd, *args.map(&:to_s)])
 
 			@pid = nil
 			@process = nil

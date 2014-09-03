@@ -49,3 +49,10 @@ end
 Then /^file (.*) should not exist$/ do |file|
 	Pathname.new(file).should_not be_file
 end
+
+Given /^file (.*) content is (.*)/ do |file, content|
+	step "file #{file} does not exist"
+	Pathname.new(file).open('w') do |file|
+		file.write content
+	end
+end

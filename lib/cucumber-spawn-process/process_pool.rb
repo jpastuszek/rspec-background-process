@@ -1,5 +1,6 @@
 require 'digest'
 require 'tmpdir'
+require 'pathname'
 
 module CucumberSpawnProcess
 	class ProcessPool
@@ -21,7 +22,8 @@ module CucumberSpawnProcess
 					kill_timeout: 10,
 					ready_test: ->(p){fail "no readiness check defined for #{p.name}"},
 					refresh_action: ->(p){p.restart}
-				}
+				},
+				arguments: []
 			}
 		end
 
@@ -30,8 +32,15 @@ module CucumberSpawnProcess
 			@definitions[name][:options].merge! hash
 		end
 
-		def get(name, arguments)
-			key = self.class.key(name, arguments)
+		def arguments(name)
+			fail "process #{name} not defined" unless @definitions.member? name
+			@definitions[name][:arguments]
+		end
+
+		def get(name)
+			definition = @definitions[name] or fail "process #{name} not defined"
+
+			key = self.class.key(name, definition[:arguments])
 
 			# already crated
 			if process = @processes[key]
@@ -40,17 +49,17 @@ module CucumberSpawnProcess
 				return process
 			end
 
-			definition = @definitions[name] or fail "process #{name} not defined"
-
 			return @processes[key] ||=
 			definition[:type].new(
 				"#{name}-#{key}",
 				definition[:path],
-				arguments,
+				definition[:arguments],
 				Dir.mktmpdir("#{name}-#{key}"),
 				definition[:options]
 			)
 		end
+
+		private
 
 		def self.key(name, arguments)
 			hash = Digest::SHA256.new
@@ -58,6 +67,7 @@ module CucumberSpawnProcess
 			arguments.each do |argument|
 				case argument
 				when Pathname
+					# use file content as part of the hash
 					hash.update argument.read
 				else
 					hash.update argument.to_s

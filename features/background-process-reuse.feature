@@ -94,3 +94,40 @@ Feature: Background process reuse through different scenarios and features
 		Then ready process should be ready
 		Then ready process log should contain ready
 
+	@reuse @arguments
+	Scenario: New process started for each argument list
+		Given test process is ready when log file contains hello world
+		Given fresh test process is running and ready
+		Then test process log should contain ARGV: []
+		When we remember test process pid
+		Given test process argument foo bar
+		And test process is running and ready
+		Then test process log should contain ARGV: ["foo bar"]
+		And test process pid should be different than remembered
+
+	@reuse @arguments
+	Scenario: New process started for each argument list pointing to file with different content
+		Given test process is ready when log file contains hello world
+		Given test process file argument /tmp/processtest-config
+		Given file /tmp/processtest-config content is foo bar
+		And fresh test process is running and ready
+		When we remember test process pid
+		Given file /tmp/processtest-config content is baz bar
+		And test process is running and ready
+		And test process pid should be different than remembered
+
+	@reuse @arguments
+	Scenario: Argument list is reset to default for each scenario
+		Given test process is ready when log file contains hello world
+		Given fresh test process is running and ready
+		Then test process log should contain ARGV: []
+		Given test process argument foo bar
+		And fresh test process is running and ready
+		Then test process log should contain ARGV: ["foo bar"]
+
+	@reuse @arguments
+	Scenario: Argument list is reset to default for each scenario
+		Given test process is ready when log file contains hello world
+		Given fresh test process is running and ready
+		Then test process log should contain ARGV: []
+
