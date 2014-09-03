@@ -4,11 +4,13 @@ puts "ARGV: #{ARGV.inspect}"
 puts "$0: #{$0}"
 puts "$*: #{$*.inspect}"
 puts "ENV['PROCESS_SPAWN_TYPE']: #{ENV['PROCESS_SPAWN_TYPE']}"
+puts "cwd: '#{Dir.pwd}'"
 
 puts 'hello world'
 
 STDOUT.flush
 sleep 2
-puts 'ready'
+puts 'started'
 STDOUT.flush
 sleep 10
+puts 'died'

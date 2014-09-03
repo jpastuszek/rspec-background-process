@@ -16,7 +16,7 @@ Feature: Background process readiness verification
 
 	@readiness
 	Scenario: Starting process failing to become ready on time
-		Given timeout process is ready when log file contains ready
+		Given timeout process is ready when log file contains started
 		And timeout process is running
 		Then timeout process should fail to become ready in time
 		Then timeout process should not be running

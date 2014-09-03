@@ -25,14 +25,21 @@ module CucumberSpawnProcess
 			end
 		end
 
-		def initialize(name, cmd, args = [], working_directory = Dir.mktmpdir(name), options = {})
+		def initialize(name, cmd, args = [], working_directory = nil, options = {})
 			@name = name
-			@command = Shellwords.join([cmd, *args.map(&:to_s)])
+			@command = Shellwords.join([(Pathname.new(Dir.pwd) + cmd).cleanpath.to_s, *args.map(&:to_s)])
 
 			@pid = nil
 			@process = nil
 
-			@working_directory = Pathname.new working_directory
+			case working_directory
+			when Array
+				working_directory = Dir.mktmpdir(working_directory)
+			when nil
+				working_directory = Dir.mktmpdir(name)
+			end
+
+			@working_directory = Pathname.new(working_directory.to_s)
 			@working_directory.directory? or @working_directory.mkdir
 
 			@pid_file = @working_directory + "#{@name}.pid"
@@ -248,10 +255,7 @@ module CucumberSpawnProcess
 
 		def spawn
 			Daemon.daemonize(@pid_file, @log_file) do |log|
-				log.truncate(0)
-
-				# usefull for testing
-				ENV['PROCESS_SPAWN_TYPE'] = 'exec'
+				prepare_process(log, 'exec')
 
 				exec(@command)
 			end
@@ -278,6 +282,14 @@ module CucumberSpawnProcess
 
 			value
 		end
+
+		def prepare_process(log, type)
+			log.truncate(0)
+			Dir.chdir(@working_directory.to_s)
+
+			# usefull for testing
+			ENV['PROCESS_SPAWN_TYPE'] = type
+		end
 	end
 
 	class LoadedBackgroundProcess < BackgroundProcess
@@ -291,7 +303,7 @@ module CucumberSpawnProcess
 
 			puts "loading ruby script: #{file}"
 			Daemon.daemonize(@pid_file, @log_file) do |log|
-				log.truncate(0)
+				prepare_process(log, 'load')
 
 				# reset ARGV
 				Object.instance_eval{ remove_const(:ARGV) }
@@ -302,9 +314,6 @@ module CucumberSpawnProcess
 
 				# reset $*
 				$*.replace(cmd)
-
-				# usefull for testing
-				ENV['PROCESS_SPAWN_TYPE'] = 'load'
 
 				load file
 

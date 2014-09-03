@@ -18,5 +18,5 @@ Feature: Loading background processes
 		Given loaded process argument baz
 		And loaded process is running and ready
 		Then loaded process log should contain ARGV: ["foo bar", "baz"]
-		Then loaded process log should contain $0: features/support/test_process
+		Then loaded process log should match \$0: .*features/support/test_process
 		Then loaded process log should contain $*: ["foo bar", "baz"]

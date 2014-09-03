@@ -51,6 +51,14 @@ Given /^([^ ]+) process is refreshed with command (.*)/ do |name, command|
 	)
 end
 
+Given /^([^ ]+) process working directory is changed to (.*)/ do |name, dir|
+	_process_pool.working_directory(name, dir)
+end
+
+Given /^([^ ]+) process working directory is the same as current working directory/ do |name|
+	_process_pool.working_directory(name, Dir.pwd)
+end
+
 Given /^([^ ]+) process argument (.*)/ do |name, argument|
 	_process_pool.arguments(name) << argument
 end
@@ -109,11 +117,28 @@ Given /^I wait ([^ ]+) seconds for process to settle$/ do |seconds|
 end
 
 Then /^([^ ]+) process log should contain (.*)/ do |name, log_line|
-	_process(name).log_file.read.should include log_line
+	_process(name).log_file.readlines.map(&:strip).should include log_line
+	#_process(name).log_file.open{|file| file.any?{|line| line.strip.include? log_line}.should be_truthy}
+	#expect(["barn", 2.45]).to include( a_string_starting_with("bar") )
+#
+	#_process(name).log_file.open do |file|
+		#expect(file.readlines)
+		#.to include(
+			#include(log_line)
+		#)
+	#end
 end
 
 Then /^([^ ]+) process log should not contain (.*)/ do |name, log_line|
-	_process(name).log_file.read.should_not include log_line
+	_process(name).log_file.readlines.map(&:strip).should_not include log_line
+end
+
+Then /^([^ ]+) process log should match (.*)/ do |name, regexp|
+	_process(name).log_file.readlines.map(&:strip).grep(Regexp.new(regexp)).should_not be_empty
+end
+
+Then /^([^ ]+) process log should not match (.*)/ do |name, regexp|
+	_process(name).log_file.readlines.map(&:strip).grep(Regexp.new(regexp)).should be_empty
 end
 
 Then /^([^ ]+) process should be running/ do |name|

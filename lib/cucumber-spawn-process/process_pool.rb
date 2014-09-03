@@ -23,6 +23,7 @@ module CucumberSpawnProcess
 					ready_test: ->(p){fail "no readiness check defined for #{p.name}"},
 					refresh_action: ->(p){p.restart}
 				},
+				working_directory: nil, # use mktemp(name + key) dir
 				arguments: []
 			}
 		end
@@ -30,6 +31,11 @@ module CucumberSpawnProcess
 		def options(name, hash)
 			fail "process #{name} not defined" unless @definitions.member? name
 			@definitions[name][:options].merge! hash
+		end
+
+		def working_directory(name, dir)
+			fail "process #{name} not defined" unless @definitions.member? name
+			@definitions[name][:working_directory] = dir
 		end
 
 		def arguments(name)
@@ -40,7 +46,7 @@ module CucumberSpawnProcess
 		def get(name)
 			definition = @definitions[name] or fail "process #{name} not defined"
 
-			key = self.class.key(name, definition[:arguments])
+			key = self.class.key(name, definition[:working_directory], definition[:arguments])
 
 			# already crated
 			if process = @processes[key]
@@ -54,16 +60,17 @@ module CucumberSpawnProcess
 				"#{name}-#{key}",
 				definition[:path],
 				definition[:arguments],
-				Dir.mktmpdir("#{name}-#{key}"),
+				definition[:working_directory] || ["#{name}-", "-#{key}"],
 				definition[:options]
 			)
 		end
 
 		private
 
-		def self.key(name, arguments)
+		def self.key(name, working_directory, arguments)
 			hash = Digest::SHA256.new
 			hash.update name
+			hash.update working_directory.to_s
 			arguments.each do |argument|
 				case argument
 				when Pathname

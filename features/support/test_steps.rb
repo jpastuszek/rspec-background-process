@@ -56,3 +56,32 @@ Given /^file (.*) content is (.*)/ do |file, content|
 		file.write content
 	end
 end
+
+Then /^([^ ]+) process reports it's current working directory to be the same as current directory/ do |name|
+	step "#{name} process log should contain cwd: '#{Dir.pwd}'"
+end
+
+Then /^([^ ]+) process reports it's current working directory to be same as log directory/ do |name|
+	step "#{name} process log should contain cwd: '#{_process(name).log_file.dirname}'"
+end
+
+Then /^([^ ]+) process reports it's current working directory to be relative to current working directory by (.*)/ do |name, dir|
+	step "#{name} process log should contain cwd: '#{Pathname.new(Dir.pwd) + dir}'"
+end
+
+Given /^we remember current working directory$/ do
+	@cwd = Dir.pwd
+end
+
+And /^current working directory is unchanged$/ do
+	Dir.pwd.should == @cwd
+end
+
+When /^we remember ([^ ]+) process reported current directory$/ do |name|
+	@process_cwd = _process(name).log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first
+end
+
+When /^remembered process current directory is different from ([^ ]+) process reported one/ do |name|
+	_process(name).log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first.should_not == @process_cwd
+end
+

@@ -11,8 +11,8 @@ Feature: Background process reuse through different scenarios and features
 		And timeouts process readiness timeout is 1.42 second
 		And timeouts process termination timeout is 1.42 second
 		And timeouts process kill timeout is 1.42 second
-		Given ready background process executable is features/support/test_process
-		Given ready process is ready when log file contains ready
+		Given test-ready background process executable is features/support/test_process
+		Given test-ready process is ready when log file contains started
 
 	@reuse @refreshing
 	Scenario: Process is started once
@@ -82,17 +82,17 @@ Feature: Background process reuse through different scenarios and features
 
 	@reuse @readiness
 	Scenario: Readiness check is reset to default for each scenario
-		Given ready process is ready when log file contains hello world
-		And fresh ready process is running and ready
-		Then ready process should be ready
-		Then ready process log should contain hello world
-		Then ready process log should not contain ready
+		Given test-ready process is ready when log file contains hello world
+		And fresh test-ready process is running and ready
+		Then test-ready process should be ready
+		Then test-ready process log should contain hello world
+		Then test-ready process log should not contain started
 
 	@reuse @readiness
 	Scenario: Readiness check is reset to default for each scenario
-		And ready process is running and ready
-		Then ready process should be ready
-		Then ready process log should contain ready
+		And test-ready process is running and ready
+		Then test-ready process should be ready
+		Then test-ready process log should contain started
 
 	@reuse @arguments
 	Scenario: New process started for each argument list
