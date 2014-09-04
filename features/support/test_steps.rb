@@ -85,3 +85,14 @@ When /^remembered process current directory is different from ([^ ]+) process re
 	expect(_process_pool[name].process.log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first).to_not eq(@process_cwd)
 end
 
+Then /stopping ([^ ]+) process will not print anything/ do |name|
+	expect{
+		step "#{name} process is stopped"
+	}.to_not output.to_stdout
+end
+
+Then /stopping ([^ ]+) process will print (.*)/ do |name, output|
+	expect{
+		step "#{name} process is stopped"
+	}.to output(/#{output}/).to_stdout
+end

@@ -1,8 +1,8 @@
 require_relative 'background_process'
 require_relative 'process_pool'
 
-def _process_pool
-	@@_process_pool ||= CucumberSpawnProcess::ProcessPool.new
+def _process_pool(options = {})
+	@@_process_pool ||= CucumberSpawnProcess::ProcessPool.new(options)
 end
 
 Given /^([^ ]+) background process executable is (.*)$/ do |name, path|
@@ -45,6 +45,10 @@ Given /^([^ ]+) process is refreshed with command (.*)/ do |name, command|
 			system command
 		end
 	)
+end
+
+Given /^([^ ]+) process logging is enabled/ do |name|
+	_process_pool[name].options(logging: true)
 end
 
 Given /^([^ ]+) process working directory is changed to (.*)/ do |name, dir|

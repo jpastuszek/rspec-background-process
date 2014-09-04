@@ -13,3 +13,13 @@ Feature: Handling of output and logging
 		And fresh test process is running and ready
 		Then test process log should contain foo bar
 
+	@logging @output
+	Scenario: By default process state changes are not logged
+		And fresh test process is running and ready
+		Then stopping test process will not print anything
+
+	@logging @output
+	Scenario: When logging is enabled process state changes are logged to STDOUT
+		Given test process logging is enabled
+		And fresh test process is running and ready
+		Then stopping test process will print process is now not_running

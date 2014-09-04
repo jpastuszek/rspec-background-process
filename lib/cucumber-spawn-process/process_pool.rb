@@ -5,7 +5,7 @@ require 'pathname'
 module CucumberSpawnProcess
 	class ProcessPool
 		class ProcessDefinition
-			def initialize(pool, name, path, type)
+			def initialize(pool, name, path, type, options)
 				@pool = pool
 				@name = name
 				@path = path
@@ -16,8 +16,9 @@ module CucumberSpawnProcess
 					term_timeout: 10,
 					kill_timeout: 10,
 					ready_test: ->(p){fail "no readiness check defined for #{p.name}"},
-					refresh_action: ->(p){p.restart}
-				}
+					refresh_action: ->(p){p.restart},
+					logging: false
+				}.merge(options)
 				@working_directory = nil
 				@arguments = []
 			end
@@ -76,13 +77,16 @@ module CucumberSpawnProcess
 			end
 		end
 
-		def initialize
+		def initialize(options)
 			@definitions = {}
 			@pool = {}
+
+			# this are passed down to processes
+			@options = options
 		end
 
 		def define(name, path, type)
-			@definitions[name] = ProcessDefinition.new(@pool, name, path, type)
+			@definitions[name] = ProcessDefinition.new(@pool, name, path, type, @options)
 		end
 
 		def [](name)

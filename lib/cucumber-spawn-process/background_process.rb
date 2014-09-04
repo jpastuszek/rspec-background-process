@@ -99,6 +99,8 @@ module CucumberSpawnProcess
 		attr_reader :kill_timeout
 
 		def reset_options(opts)
+			@logging = opts[:logging]
+
 			@ready_timeout = opts[:ready_timeout] || 10
 			@term_timeout = opts[:term_timeout] || 10
 			@kill_timeout = opts[:kill_timeout] || 10
@@ -232,7 +234,7 @@ module CucumberSpawnProcess
 		end
 
 		def puts(message)
-			super "#{name}: #{message}"
+			super "#{name}: #{message}" if @logging
 		end
 
 		def to_s
