@@ -4,6 +4,7 @@ Feature: Background process reuse through different scenarios and features
 	New processes will be spawned for different set of arguments required for given scenario.
 	Pathname arguments will be checksumed to detect configuration changes as well.
 	Process settings are reset for each scenario.
+	There is a limit on how many processes will be kept between scenarios.
 
 	Background:
 		Given test background process executable is features/support/test_process
@@ -13,6 +14,11 @@ Feature: Background process reuse through different scenarios and features
 		And timeouts process kill timeout is 1.42 second
 		Given test-ready background process executable is features/support/test_process
 		Given test-ready process is ready when log file contains started
+		Given test-1 background process ruby script is features/support/test_process
+		Given test-2 background process ruby script is features/support/test_process
+		Given test-3 background process ruby script is features/support/test_process
+		Given test-4 background process ruby script is features/support/test_process
+		Given test-5 background process ruby script is features/support/test_process
 
 	@reuse @refreshing
 	Scenario: Process is started once
@@ -130,3 +136,24 @@ Feature: Background process reuse through different scenarios and features
 		Given test process is ready when log file contains hello world
 		Given fresh test process is running and ready
 		Then test process log should contain ARGV: []
+
+	@reuse @lru
+	Scenario: Up to 4 most recently used processes are kept running between scenario but all within scenario using them
+		Given test-1 process is running
+		Given test-2 process is running
+		Given test-3 process is running
+		Given test-4 process is running
+		Given test-5 process is running
+		Then test-1 process should be running
+		Then test-2 process should be running
+		Then test-3 process should be running
+		Then test-4 process should be running
+		Then test-5 process should be running
+
+	@reuse @lru
+	Scenario: Up to 4 most recently used processes are kept running between scenario but all within scenario using them
+		Then test-1 process should not be running
+		Then test-2 process should be running
+		Then test-3 process should be running
+		Then test-4 process should be running
+		Then test-5 process should be running

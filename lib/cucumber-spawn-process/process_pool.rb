@@ -2,6 +2,7 @@ require 'digest'
 require 'tmpdir'
 require 'pathname'
 require 'rufus-lru'
+require 'set'
 
 module CucumberSpawnProcess
 	class ProcessPool
@@ -87,23 +88,22 @@ module CucumberSpawnProcess
 
 			def initialize(max_running, &lru_stop)
 				@running_keep = max_running > 0 ? LruHash.new(max_running) : VoidHash.new
-				# TODO: no need for hash here
-				@running_all = {}
-				@active = {}
+				@running_all = Set.new
+				@active = Set.new
 
 				@after_store = []
 				@lru_stop = lru_stop
 			end
 
 			def []=(key, value)
-				@active[key] = value
+				@active << key
 				super
 				@after_store.each{|callback| callback.call(key, value)}
 			end
 
 			def [](key)
 				if self.member? key
-					@active[key] = super
+					@active << key
 					@running_keep[key] # bump on use if on running LRU list
 				end
 				super
@@ -117,14 +117,14 @@ module CucumberSpawnProcess
 			end
 
 			def reset_active
-				@active = {}
+				@active = Set.new
 				trim!
 			end
 
 			def running(key)
 				return unless member? key
-				@running_keep[key] = self[key]
-				@running_all[key] = self[key]
+				@running_keep[key] = key
+				@running_all << key
 				trim!
 			end
 
@@ -146,7 +146,7 @@ module CucumberSpawnProcess
 			end
 
 			def to_stop
-				@running_all.keys - @active.keys - @running_keep.keys
+				@running_all - @active - @running_keep.values
 			end
 		end
 

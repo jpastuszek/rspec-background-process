@@ -8,6 +8,5 @@ rescue Bundler::BundlerError => e
 end
 
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../../lib')
-require 'cucumber-spawn-process'
 
 require 'rspec/expectations'
