@@ -5,7 +5,11 @@ def _process_pool(options = {})
 	@@_process_pool ||= CucumberSpawnProcess::ProcessPool.new(options)
 end
 
+#_process_pool(logging: true)
+
 After do |scenario|
+	_process_pool.reset_active
+
 	if scenario.failed?
 		if failed_process = _process_pool.failed_process
 			STDERR.puts "Last failed process state log: "

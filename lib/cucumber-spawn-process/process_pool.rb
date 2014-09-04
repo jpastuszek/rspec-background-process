@@ -1,6 +1,7 @@
 require 'digest'
 require 'tmpdir'
 require 'pathname'
+require 'rufus-lru'
 
 module CucumberSpawnProcess
 	class ProcessPool
@@ -77,9 +78,99 @@ module CucumberSpawnProcess
 			end
 		end
 
+		class LRUPool < Hash
+			class VoidHash < Hash
+				def []=(key, value)
+					value
+				end
+			end
+
+			def initialize(max_running, &lru_stop)
+				@running_keep = max_running > 0 ? LruHash.new(max_running) : VoidHash.new
+				# TODO: no need for hash here
+				@running_all = {}
+				@active = {}
+
+				@after_store = []
+				@lru_stop = lru_stop
+			end
+
+			def []=(key, value)
+				@active[key] = value
+				super
+				@after_store.each{|callback| callback.call(key, value)}
+			end
+
+			def [](key)
+				if self.member? key
+					@active[key] = super
+					@running_keep[key] # bump on use if on running LRU list
+				end
+				super
+			end
+
+			def delete(key)
+				@running_keep.delete(key)
+				@running_all.delete(key)
+				@active.delete(key)
+				super
+			end
+
+			def reset_active
+				@active = {}
+				trim!
+			end
+
+			def running(key)
+				return unless member? key
+				@running_keep[key] = self[key]
+				@running_all[key] = self[key]
+				trim!
+			end
+
+			def not_running(key)
+				@running_keep.delete(key)
+				@running_all.delete(key)
+			end
+
+			def after_store(&callback)
+				@after_store << callback
+			end
+
+			private
+
+			def trim!
+				to_stop.each do |key|
+					@lru_stop.call(key, self[key])
+				end
+			end
+
+			def to_stop
+				@running_all.keys - @active.keys - @running_keep.keys
+			end
+		end
+
 		def initialize(options)
 			@definitions = {}
-			@pool = {}
+
+			@max_size = options.delete(:max_size) || 4
+
+			@pool = LRUPool.new(@max_size) do |key, process|
+				#puts "too many processes running, stopping: #{process.name}"
+				process.stop
+			end
+
+			# keep track of running running
+			@pool.after_store do |key, process|
+				process.after_state_change do |new_state|
+					# we mark running before it is actually started to have a chance to stop over-limit process first
+					@pool.running(key) if new_state == :starting
+					@pool.not_running(key) if [:not_running, :dead, :jammed].include? new_state
+				end
+
+				# mark running if added while already running
+				@pool.running(key) if process.running?
+			end
 
 			# this are passed down to processes
 			@options = options
@@ -93,9 +184,12 @@ module CucumberSpawnProcess
 			@definitions[name] or fail "process #{name} not defined"
 		end
 
+		def reset_active
+			@pool.reset_active
+		end
+
 		def failed_process
 			@pool.values.select do |process|
-				p process
 				process.dead? or
 				process.failed? or
 				process.jammed?

@@ -54,13 +54,24 @@ module CucumberSpawnProcess
 			@_fsm = MicroMachine.new(:not_running)
 
 			@state_change_time = Time.now.to_f
+			@after_state_change = []
+
 			@_fsm.on(:any) do
 				@state_change_time = Time.now.to_f
 				puts "process is now #{@_fsm.state}"
+				@after_state_change.each{|callback| callback.call(@_fsm.state)}
+			end
+
+			@_fsm.when(:starting,
+				not_running: :starting
+			)
+
+			@_fsm.on(:starting) do
+				puts "starting: `#{@command}` log file: #{@log_file}"
 			end
 
 			@_fsm.when(:started,
-				not_running: :running
+				starting: :running
 			)
 			@_fsm.on(:running) do
 				puts "running with pid: #{@pid}"
@@ -72,10 +83,12 @@ module CucumberSpawnProcess
 			)
 
 			@_fsm.when(:died,
+				starting: :dead,
 				running: :dead,
 				ready: :dead
 			)
 
+			# it is topped before marked failed
 			@_fsm.when(:failed,
 				not_running: :failed
 			)
@@ -163,9 +176,10 @@ module CucumberSpawnProcess
 
 		def start
 			return self if trigger? :stopped
-			trigger? :started or fail "can't start when: #{state}"
+			trigger? :starting or fail "can't start when: #{state}"
 
-			puts "starting: `#{@command}` log file: #{@log_file}"
+			trigger :starting
+
 			@pid, @process = spawn
 
 			@process_watcher = Thread.new do
@@ -239,6 +253,10 @@ module CucumberSpawnProcess
 				trigger :verified
 				self
 			end
+		end
+
+		def after_state_change(&callback)
+			@after_state_change << callback
 		end
 
 		def puts(message)

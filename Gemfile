@@ -8,4 +8,5 @@ group :development do
 	gem 'bundler', '~> 1.0'
 	gem 'daemon', '~> 1.2'
 	gem 'micromachine', '~> 1.1'
+	gem 'rufus-lru', '~> 1.0'
 end
