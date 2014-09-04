@@ -19,15 +19,15 @@ Then /^([^ ]+) process should fail to stop$/ do |name|
 end
 
 Given /we remember ([^ ]+) process pid/ do |name|
-	(@process_pids ||= {})[name] = _process(name).pid
+	(@process_pids ||= {})[name] = _process_pool[name].process.pid
 end
 
 Then /^([^ ]+) process pid should be as remembered$/ do |name|
-	expect(_process(name).pid).to eq((@process_pids ||= {})[name])
+	expect(_process_pool[name].process.pid).to eq((@process_pids ||= {})[name])
 end
 
 Then /^([^ ]+) process pid should be different than remembered$/ do |name|
-	expect(_process(name).pid).to_not eq((@process_pids ||= {})[name])
+	expect(_process_pool[name].process.pid).to_not eq((@process_pids ||= {})[name])
 end
 
 Then /^kill myself/ do
@@ -62,7 +62,7 @@ Then /^([^ ]+) process reports it's current working directory to be the same as 
 end
 
 Then /^([^ ]+) process reports it's current working directory to be same as log directory/ do |name|
-	step "#{name} process log should contain cwd: '#{_process(name).log_file.dirname}'"
+	step "#{name} process log should contain cwd: '#{_process_pool[name].process.log_file.dirname}'"
 end
 
 Then /^([^ ]+) process reports it's current working directory to be relative to current working directory by (.*)/ do |name, dir|
@@ -78,10 +78,10 @@ And /^current working directory is unchanged$/ do
 end
 
 When /^we remember ([^ ]+) process reported current directory$/ do |name|
-	@process_cwd = _process(name).log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first
+	@process_cwd = _process_pool[name].process.log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first
 end
 
 When /^remembered process current directory is different from ([^ ]+) process reported one/ do |name|
-	expect(_process(name).log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first).to_not eq(@process_cwd)
+	expect(_process_pool[name].process.log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first).to_not eq(@process_cwd)
 end
 
