@@ -152,11 +152,13 @@ module CucumberSpawnProcess
 
 		def initialize(options)
 			@definitions = {}
+			@stats = {}
 
-			@max_size = options.delete(:max_size) || 4
+			@max_running = options.delete(:max_running) || 4
 
-			@pool = LRUPool.new(@max_size) do |key, process|
+			@pool = LRUPool.new(@max_running) do |key, process|
 				#puts "too many processes running, stopping: #{process.name}"
+				stats(process.name)[:lru_stopped] += 1
 				process.stop
 			end
 
@@ -164,12 +166,19 @@ module CucumberSpawnProcess
 			@pool.after_store do |key, process|
 				process.after_state_change do |new_state|
 					# we mark running before it is actually started to have a chance to stop over-limit process first
-					@pool.running(key) if new_state == :starting
+					if new_state == :starting
+						@pool.running(key)
+						stats(process.name)[:started] += 1
+					end
 					@pool.not_running(key) if [:not_running, :dead, :jammed].include? new_state
 				end
 
 				# mark running if added while already running
 				@pool.running(key) if process.running?
+
+				# init stats
+				stats(process.name)[:started] ||= 0
+				stats(process.name)[:lru_stopped] ||= 0
 			end
 
 			# this are passed down to processes
@@ -186,6 +195,18 @@ module CucumberSpawnProcess
 
 		def reset_active
 			@pool.reset_active
+		end
+
+		def stats(name)
+			@stats[name] ||= {}
+		end
+
+		def report_stats
+			puts
+			puts "Process pool stats:"
+			@stats.each do |key, stats|
+				puts "#{key}: #{stats.map{|k, v| "#{k}: #{v}"}.join(' ')}"
+			end
 		end
 
 		def failed_process

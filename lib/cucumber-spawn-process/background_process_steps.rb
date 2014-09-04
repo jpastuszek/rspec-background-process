@@ -5,11 +5,19 @@ def _process_pool(options = {})
 	@@_process_pool ||= CucumberSpawnProcess::ProcessPool.new(options)
 end
 
-#_process_pool(logging: true)
+# env.rb:
+#require 'cucumber-spawn-process'
+#
+# Uncomment to change defaults
+#_process_pool(logging: false, max_running: 4)
+#
+# Uncomment to see LRU stats
+#at_exit do
+#	_process_pool.report_stats
+#end
 
 After do |scenario|
 	_process_pool.reset_active
-
 	if scenario.failed?
 		if failed_process = _process_pool.failed_process
 			STDERR.puts "Last failed process state log: "
