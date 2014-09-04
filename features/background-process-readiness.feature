@@ -11,11 +11,11 @@ Feature: Background process readiness verification
 
 	@readiness @log
 	Scenario: Starting a background process with readiness check based on log file contents
-		Given test-ok process is ready when log file contains hello world
+		Given test-ok process is ready when log file contains started
 		And test-ok process is running and ready
 		Then test-ok process should be running
 		Then test-ok process should be ready
-		Then test-ok process log should contain hello world
+		Then test-ok process log should contain started
 
 	@readiness @failed
 	Scenario: Starting process failing to become ready on time

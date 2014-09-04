@@ -58,8 +58,12 @@ Given /^([^ ]+) process is ready when log file contains (.*)/ do |name, log_line
 		ready_test: ->(process) do
 			process.log_file.open do |log|
 				loop do
-					line = log.gets and line.include?(log_line) and break true
-					sleep 0.1
+					if line = log.gets
+						line.include?(log_line) and break true
+					elsif log.eof?
+						# wait for more data
+						sleep 0.1
+					end
 				end
 			end
 		end
