@@ -2,12 +2,12 @@ Feature: Handling of output and logging
 	All process output is written to a log file.
 
 	Background:
-		Given test background process executable is features/support/test_process
+		Given test background process ruby script is features/support/test_process
 		And test process is ready when log file contains hello world
-		Given test2 background process executable is features/support/test_process
+		Given test2 background process ruby script is features/support/test_process
 		And test2 process is ready when log file contains hello world
-		Given bogus background process executable is features/support/bogus
-		Given unkillable background process executable is features/support/test_process
+		Given bogus background process ruby script is features/support/bogus
+		Given unkillable background process ruby script is features/support/test_process
 		And unkillable process termination timeout is 0.0 second
 		And unkillable process kill timeout is 0.0 second
 

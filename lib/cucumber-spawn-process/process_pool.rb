@@ -60,6 +60,8 @@ module CucumberSpawnProcess
 			def key
 				hash = Digest::SHA256.new
 				hash.update @name
+				hash.update @path
+				hash.update @type.name
 				hash.update @working_directory.to_s
 				@arguments.each do |argument|
 					case argument

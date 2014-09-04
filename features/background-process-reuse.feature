@@ -7,12 +7,12 @@ Feature: Background process reuse through different scenarios and features
 	There is a limit on how many processes will be kept between scenarios.
 
 	Background:
-		Given test background process executable is features/support/test_process
-		Given timeouts background process executable is features/support/test_process
+		Given test background process ruby script is features/support/test_process
+		Given timeouts background process ruby script is features/support/test_process
 		And timeouts process readiness timeout is 1.42 second
 		And timeouts process termination timeout is 1.42 second
 		And timeouts process kill timeout is 1.42 second
-		Given test-ready background process executable is features/support/test_process
+		Given test-ready background process ruby script is features/support/test_process
 		Given test-ready process is ready when log file contains started
 		Given test-1 background process ruby script is features/support/test_process
 		Given test-2 background process ruby script is features/support/test_process
