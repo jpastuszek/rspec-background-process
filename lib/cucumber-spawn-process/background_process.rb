@@ -317,7 +317,7 @@ module CucumberSpawnProcess
 			log.truncate(0)
 			Dir.chdir(@working_directory.to_s)
 
-			# usefull for testing
+			# useful for testing
 			ENV['PROCESS_SPAWN_TYPE'] = type
 		end
 	end
