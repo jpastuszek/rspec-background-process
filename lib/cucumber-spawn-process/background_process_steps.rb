@@ -5,6 +5,21 @@ def _process_pool(options = {})
 	@@_process_pool ||= CucumberSpawnProcess::ProcessPool.new(options)
 end
 
+After do |scenario|
+	if scenario.failed?
+		if failed_process = _process_pool.failed_process
+			STDERR.puts "Last failed process state log: "
+			failed_process.state_log.each do |log_line|
+				STDERR.puts "\t#{log_line}"
+			end
+			STDERR.puts "Working directory: #{failed_process.working_directory}"
+			STDERR.puts "Log file: #{failed_process.log_file}"
+			STDERR.puts "State: #{failed_process.state}"
+			STDERR.puts "Exit code: #{failed_process.exit_code}"
+		end
+	end
+end
+
 Given /^([^ ]+) background process executable is (.*)$/ do |name, path|
 	_process_pool.define(name, path, CucumberSpawnProcess::BackgroundProcess)
 end

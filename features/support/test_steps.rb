@@ -91,8 +91,18 @@ Then /stopping ([^ ]+) process will not print anything/ do |name|
 	}.to_not output.to_stdout
 end
 
+Given /this scenario fail/ do
+	fail 'forced scenario failure'
+end
+
 Then /stopping ([^ ]+) process will print (.*)/ do |name, output|
 	expect{
-		step "#{name} process is stopped"
+		step "#{name} process is stopped" rescue true
 	}.to output(/#{output}/).to_stdout
+end
+
+Then /stopping ([^ ]+) process will report to STDERR/ do |name|
+	expect{
+		step "#{name} process is stopped" rescue true
+	}.to output.to_stderr
 end

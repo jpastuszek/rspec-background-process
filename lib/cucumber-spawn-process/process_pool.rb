@@ -92,5 +92,16 @@ module CucumberSpawnProcess
 		def [](name)
 			@definitions[name] or fail "process #{name} not defined"
 		end
+
+		def failed_process
+			@pool.values.select do |process|
+				p process
+				process.dead? or
+				process.failed? or
+				process.jammed?
+			end.sort_by do |process|
+				process.state_change_time
+			end.last
+		end
 	end
 end

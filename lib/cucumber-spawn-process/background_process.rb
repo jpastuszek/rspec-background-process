@@ -32,6 +32,8 @@ module CucumberSpawnProcess
 			@pid = nil
 			@process = nil
 
+			@state_log = []
+
 			case working_directory
 			when Array
 				working_directory = Dir.mktmpdir(working_directory)
@@ -50,7 +52,10 @@ module CucumberSpawnProcess
 			@fsm_lock = Mutex.new
 
 			@_fsm = MicroMachine.new(:not_running)
+
+			@state_change_time = Time.now.to_f
 			@_fsm.on(:any) do
+				@state_change_time = Time.now.to_f
 				puts "process is now #{@_fsm.state}"
 			end
 
@@ -92,11 +97,14 @@ module CucumberSpawnProcess
 		end
 
 		attr_reader :name
+		attr_reader :working_directory
 		attr_reader :pid_file
 		attr_reader :log_file
 		attr_reader :ready_timeout
 		attr_reader :term_timeout
 		attr_reader :kill_timeout
+		attr_reader :state_change_time
+		attr_reader :state_log
 
 		def reset_options(opts)
 			@logging = opts[:logging]
@@ -234,7 +242,9 @@ module CucumberSpawnProcess
 		end
 
 		def puts(message)
-			super "#{name}: #{message}" if @logging
+			message = "#{name}: #{message}"
+			@state_log << message
+			super message if @logging
 		end
 
 		def to_s

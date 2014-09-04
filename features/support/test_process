@@ -12,5 +12,5 @@ STDOUT.flush
 sleep 2
 puts 'started'
 STDOUT.flush
-sleep 10
+sleep 20
 puts 'died'
