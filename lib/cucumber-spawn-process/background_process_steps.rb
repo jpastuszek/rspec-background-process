@@ -1,5 +1,6 @@
 require_relative 'background_process'
 require_relative 'process_pool'
+require 'open-uri'
 
 def _process_pool(options = {})
 	@@_process_pool ||= CucumberSpawnProcess::ProcessPool.new(options)
@@ -57,10 +58,26 @@ Given /^([^ ]+) process is ready when log file contains (.*)/ do |name, log_line
 		ready_test: ->(process) do
 			process.log_file.open do |log|
 				loop do
-					line = log.gets and line.include?(log_line) and break
+					line = log.gets and line.include?(log_line) and break true
 					sleep 0.1
 				end
-				true
+			end
+		end
+	)
+end
+
+Given /^([^ ]+) process is ready when URI (.*) response status is (.*)/ do |name, uri, status|
+	_process_pool[name].options(
+		ready_test: ->(process) do
+			backoff = 0.06
+			grow = 1.5
+
+			begin
+				open(uri).status.last.strip == status and break true
+			rescue Errno::ECONNREFUSED
+				sleep backoff
+				backoff *= grow
+				retry
 			end
 		end
 	)

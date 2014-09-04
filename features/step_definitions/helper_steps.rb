@@ -6,10 +6,38 @@ Given /^([^ ]+) process exits prematurely/ do |name|
 	}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessExitedError
 end
 
+Given /([^ ]+) process readiness fails with falsy value/ do |name|
+	_process_pool[name].options(
+		ready_test: ->(process) do
+			false
+		end
+	)
+end
+
+Given /([^ ]+) process readiness fails with exception/ do |name|
+	_process_pool[name].options(
+		ready_test: ->(process) do
+			fail 'check fail test error'
+		end
+	)
+end
+
 Then /^([^ ]+) process should fail to become ready in time$/ do |name|
 	expect {
 		step "#{name} process is ready"
-	}.to raise_error Timeout::Error
+	}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessReadyTimeOutError
+end
+
+Then /^([^ ]+) process should fail to become ready with failed error/ do |name|
+	expect {
+		step "#{name} process is ready"
+	}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessReadyFailedError
+end
+
+Then /^([^ ]+) process should fail to become ready with exception/ do |name|
+	expect {
+		step "#{name} process is ready"
+	}.to raise_error RuntimeError, 'check fail test error'
 end
 
 Then /^([^ ]+) process should fail to stop$/ do |name|

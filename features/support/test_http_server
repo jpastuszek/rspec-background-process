@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+require "webrick"
+
+server = WEBrick::HTTPServer.new(:Port => 1234)
+
+server.mount_proc '/health_check' do |req, res|
+	res.body = "OK\n\r"
+end
+
+trap("INT") {
+	server.shutdown
+}
+
+trap("TERM") {
+	server.shutdown
+}
+
+server.start
+

@@ -13,6 +13,12 @@ module CucumberSpawnProcess
 			end
 		end
 
+		class ProcessReadyFailedError < RuntimeError
+			def initialize(process)
+				super "process #{process} readiness check failed"
+			end
+		end
+
 		class ProcessReadyTimeOutError < Timeout::Error
 			def initialize(process)
 				super "process #{process} failed to start in time"
@@ -243,12 +249,17 @@ module CucumberSpawnProcess
 				puts "process failed to pass it's readiness test"
 				stop
 				trigger :failed
-				raise ProcessReadyTimeOutError.new(self.to_s)
+				raise ProcessReadyFailedError.new(self.to_s)
 			when :ready_timeout
 				puts "process not ready in time; see #{log_file} for detail"
 				stop
 				trigger :failed
 				raise ProcessReadyTimeOutError.new(self.to_s)
+			when Exception
+				puts "process readiness check raised error: #{status}; see #{log_file} for detail"
+				stop
+				trigger :failed
+				raise status
 			else
 				trigger :verified
 				self
@@ -306,8 +317,6 @@ module CucumberSpawnProcess
 				puts "process exited; see #{log_file} for detail"
 				trigger :died
 				raise ProcessExitedError.new(self.to_s, exit_code)
-			when Exception
-				raise value
 			end
 
 			value
