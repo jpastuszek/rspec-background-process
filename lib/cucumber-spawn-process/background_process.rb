@@ -53,6 +53,7 @@ module CucumberSpawnProcess
 			@pid_file = @working_directory + "#{@name}.pid"
 			@log_file = @working_directory + "#{@name}.log"
 
+			@options = options
 			reset_options(options)
 
 			@fsm_lock = Mutex.new

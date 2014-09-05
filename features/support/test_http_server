@@ -2,7 +2,12 @@
 
 require "webrick"
 
-server = WEBrick::HTTPServer.new(:Port => 1234)
+puts "ARGV: #{ARGV.inspect}"
+
+port = ARGV.grep(/localhost:/).first.split(':', 2).last rescue 1234
+puts "listening on port: #{port}"
+
+server = WEBrick::HTTPServer.new(:Port => port)
 
 server.mount_proc '/health_check' do |req, res|
 	res.body = "OK\n\r"
@@ -15,6 +20,8 @@ trap("INT") {
 trap("TERM") {
 	server.shutdown
 }
+
+puts "starting"
 
 server.start
 

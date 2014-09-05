@@ -134,3 +134,12 @@ Then /stopping ([^ ]+) process will report to STDERR/ do |name|
 		step "#{name} process is stopped" rescue true
 	}.to output.to_stderr
 end
+
+Then /([^ ]+) process should have ports? (.*) allocated/ do |name, ports|
+	expect(_process_pool[name].process.ports).to contain_exactly *ports.split(/, +/).map(&:to_i)
+end
+
+Given /([^ ]+) process listens on allocated port (\d+)/ do |name, port|
+	step "#{name} process option --listen with value localhost:#{_process_pool[name].process.ports[port.to_i - 1]}"
+end
+

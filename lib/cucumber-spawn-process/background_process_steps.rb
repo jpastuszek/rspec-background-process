@@ -1,4 +1,5 @@
 require_relative 'background_process'
+require_relative 'background_process_server'
 require_relative 'process_pool'
 require 'open-uri'
 require 'file-tail'
@@ -40,6 +41,10 @@ end
 
 Given /^([^ ]+) background process ruby script is (.*)$/ do |name, path|
 	_process_pool.define(name, path, CucumberSpawnProcess::LoadedBackgroundProcess)
+end
+
+Given /^([^ ]+) process is a server with (\d+) ports? allocated from (\d+) up/ do |name, port_count, base_port|
+	_process_pool[name].extend(CucumberSpawnProcess::BackgroundProcess::Server, port_count: port_count.to_i, base_port: base_port.to_i)
 end
 
 Given /^([^ ]+) process readiness timeout is (.*) seconds?$/ do |name, seconds|

@@ -12,6 +12,7 @@ module CucumberSpawnProcess
 				@name = name
 				@path = path
 				@type = type
+				@extensions = Set.new
 
 				@options = {
 					ready_timeout: 10,
@@ -23,6 +24,11 @@ module CucumberSpawnProcess
 				}.merge(options)
 				@working_directory = nil
 				@arguments = []
+			end
+
+			def extend(mod, options)
+				@extensions << mod
+				@options.merge! options
 			end
 
 			def options(hash)
@@ -47,14 +53,19 @@ module CucumberSpawnProcess
 					return process
 				end
 
-				return @pool[_key] ||=
-					@type.new(
-						"#{@name}-#{_key}",
-						@path,
-						@arguments,
-						@working_directory || ["#{@name}-", "-#{_key}"],
-						@options
-					)
+				process = @type.new(
+					"#{@name}-#{_key}",
+					@path,
+					@arguments,
+					@working_directory || ["#{@name}-", "-#{_key}"],
+					@options
+				)
+
+				@extensions.each do |mod|
+					process.extend(mod)
+				end
+
+				@pool[_key] = process
 			end
 
 			def key
@@ -62,6 +73,9 @@ module CucumberSpawnProcess
 				hash.update @name
 				hash.update @path
 				hash.update @type.name
+				@extensions.each do |mod|
+					hash.update mod.name
+				end
 				hash.update @working_directory.to_s
 				@arguments.each do |argument|
 					case argument
@@ -90,8 +104,8 @@ module CucumberSpawnProcess
 
 			def initialize(max_running, &lru_stop)
 				@running_keep = max_running > 0 ? LruHash.new(max_running) : VoidHash.new
-				@running_all = Set.new
-				@active = Set.new
+				@running_all = Set[]
+				@active = Set[]
 
 				@after_store = []
 				@lru_stop = lru_stop
@@ -183,8 +197,11 @@ module CucumberSpawnProcess
 				stats(process.name)[:lru_stopped] ||= 0
 			end
 
+			# for storing shared data
+			@global_context = {}
+
 			# this are passed down to processes
-			@options = options
+			@options = options.merge(global_context: @global_context)
 		end
 
 		def define(name, path, type)
