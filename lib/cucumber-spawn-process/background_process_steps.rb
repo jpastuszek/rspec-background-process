@@ -73,17 +73,16 @@ Given /^(#{PROCESS}) kill timeout is (.*) seconds?$/ do |process, seconds|
 end
 
 Given /^(#{PROCESS}) is ready when log file contains (.*)/ do |process, log_line|
-	# NOTE: use of process.log_file is needed to use process form the block (instance) and not form the step definition (process definition)
 	process.options(
-		ready_test: ->(process) do
-			# NOTE: log file my not be crated strigh after process is started (spawned) so we need to retry
+		ready_test: ->(instance) do
+			# NOTE: log file my not be crated just after process is started (spawned) so we need to retry
 			with_retries(
 				max_tries: 1000,
 				base_sleep_seconds: 0.01,
 				max_sleep_seconds: 1.0,
 				rescue: Errno::ENOENT
 			) do
-				File::Tail::Logfile.tail(process.log_file, forward: 0, interval: 0.01, max_interval: 1, suspicious_interval: 4) do |line|
+				File::Tail::Logfile.tail(instance.log_file, forward: 0, interval: 0.01, max_interval: 1, suspicious_interval: 4) do |line|
 					line.include?(log_line) and break true
 				end
 			end
@@ -93,7 +92,7 @@ end
 
 Given /^(#{PROCESS}) is ready when URI (.*) response status is (.*)/ do |process, uri, status|
 	process.options(
-		ready_test: ->(process) do
+		ready_test: ->(instance) do
 			begin
 				with_retries(
 					max_tries: 1000,
