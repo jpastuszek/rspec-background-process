@@ -1,61 +1,61 @@
 # used for testing internally
 
-Given /^([^ ]+) process exits prematurely/ do |name|
+Given /^(#{PROCESS}) exits prematurely/ do |process|
 	expect {
-		step "#{name} process is running"
+		step "#{process.name} process is running"
 	}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessExitedError
 end
 
-Given /([^ ]+) process readiness fails with falsy value/ do |name|
-	_process_pool[name].options(
+Given /(#{PROCESS}) readiness fails with falsy value/ do |process|
+	process.options(
 		ready_test: ->(process) do
 			false
 		end
 	)
 end
 
-Given /([^ ]+) process readiness fails with exception/ do |name|
-	_process_pool[name].options(
+Given /(#{PROCESS}) readiness fails with exception/ do |process|
+	process.options(
 		ready_test: ->(process) do
 			fail 'check fail test error'
 		end
 	)
 end
 
-Then /^([^ ]+) process should fail to become ready in time$/ do |name|
+Then /^(#{PROCESS}) should fail to become ready in time$/ do |process|
 	expect {
-		step "#{name} process is ready"
+		step "#{process.name} process is ready"
 	}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessReadyTimeOutError
 end
 
-Then /^([^ ]+) process should fail to become ready with failed error/ do |name|
+Then /^(#{PROCESS}) should fail to become ready with failed error/ do |process|
 	expect {
-		step "#{name} process is ready"
+		step "#{process.name} process is ready"
 	}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessReadyFailedError
 end
 
-Then /^([^ ]+) process should fail to become ready with exception/ do |name|
+Then /^(#{PROCESS}) should fail to become ready with exception/ do |process|
 	expect {
-		step "#{name} process is ready"
+		step "#{process.name} process is ready"
 	}.to raise_error RuntimeError, 'check fail test error'
 end
 
-Then /^([^ ]+) process should fail to stop$/ do |name|
+Then /^(#{PROCESS}) should fail to stop$/ do |process|
 	expect {
-		step "#{name} process is stopped"
+		step "#{process.name} process is stopped"
 	}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessRunAwayError
 end
 
-Given /we remember ([^ ]+) process pid/ do |name|
-	(@process_pids ||= {})[name] = _process_pool[name].process.pid
+Given /we remember (#{PROCESS}) pid/ do |process|
+	(@process_pids ||= {})[process.name] = process.process.pid
 end
 
-Then /^([^ ]+) process pid should be as remembered$/ do |name|
-	expect(_process_pool[name].process.pid).to eq((@process_pids ||= {})[name])
+Then /^(#{PROCESS}) pid should be as remembered$/ do |process|
+	expect(process.process.pid).to eq((@process_pids ||= {})[process.name])
 end
 
-Then /^([^ ]+) process pid should be different than remembered$/ do |name|
-	expect(_process_pool[name].process.pid).to_not eq((@process_pids ||= {})[name])
+Then /^(#{PROCESS}) pid should be different than remembered$/ do |process|
+	expect(process.process.pid).to_not eq((@process_pids ||= {})[process.name])
 end
 
 Then /^kill myself/ do
@@ -85,16 +85,16 @@ Given /^file (.*) content is (.*)/ do |file, content|
 	end
 end
 
-Then /^([^ ]+) process reports it's current working directory to be the same as current directory/ do |name|
-	step "#{name} process log should contain cwd: '#{Dir.pwd}'"
+Then /^(#{PROCESS}) reports it's current working directory to be the same as current directory/ do |process|
+	step "#{process.name} process log should contain cwd: '#{Dir.pwd}'"
 end
 
-Then /^([^ ]+) process reports it's current working directory to be same as log directory/ do |name|
-	step "#{name} process log should contain cwd: '#{_process_pool[name].process.log_file.dirname}'"
+Then /^(#{PROCESS}) reports it's current working directory to be same as log directory/ do |process|
+	step "#{process.name} process log should contain cwd: '#{process.process.log_file.dirname}'"
 end
 
-Then /^([^ ]+) process reports it's current working directory to be relative to current working directory by (.*)/ do |name, dir|
-	step "#{name} process log should contain cwd: '#{Pathname.new(Dir.pwd) + dir}'"
+Then /^(#{PROCESS}) reports it's current working directory to be relative to current working directory by (.*)/ do |process, dir|
+	step "#{process.name} process log should contain cwd: '#{Pathname.new(Dir.pwd) + dir}'"
 end
 
 Given /^we remember current working directory$/ do
@@ -105,17 +105,17 @@ And /^current working directory is unchanged$/ do
 	expect(Dir.pwd).to eq(@cwd)
 end
 
-When /^we remember ([^ ]+) process reported current directory$/ do |name|
-	@process_cwd = _process_pool[name].process.log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first
+When /^we remember (#{PROCESS}) reported current directory$/ do |process|
+	@process_cwd = process.process.log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first
 end
 
-When /^remembered process current directory is different from ([^ ]+) process reported one/ do |name|
-	expect(_process_pool[name].process.log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first).to_not eq(@process_cwd)
+When /^remembered process current directory is different from (#{PROCESS}) reported one/ do |process|
+	expect(process.process.log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first).to_not eq(@process_cwd)
 end
 
-Then /stopping ([^ ]+) process will not print anything/ do |name|
+Then /stopping (#{PROCESS}) will not print anything/ do |process|
 	expect{
-		step "#{name} process is stopped"
+		step "#{process.name} process is stopped"
 	}.to_not output.to_stdout
 end
 
@@ -123,23 +123,23 @@ Given /this scenario fail/ do
 	fail 'forced scenario failure'
 end
 
-Then /stopping ([^ ]+) process will print (.*)/ do |name, output|
+Then /stopping (#{PROCESS}) will print (.*)/ do |process, output|
 	expect{
-		step "#{name} process is stopped" rescue true
+		step "#{process.name} process is stopped" rescue true
 	}.to output(/#{output}/).to_stdout
 end
 
-Then /stopping ([^ ]+) process will report to STDERR/ do |name|
+Then /stopping (#{PROCESS}) will report to STDERR/ do |process|
 	expect{
-		step "#{name} process is stopped" rescue true
+		step "#{process.name} process is stopped" rescue true
 	}.to output.to_stderr
 end
 
-Then /([^ ]+) process should have ports? (.*) allocated/ do |name, ports|
-	expect(_process_pool[name].process.ports).to contain_exactly *ports.split(/, +/).map(&:to_i)
+Then /(#{PROCESS}) should have ports? (.*) allocated/ do |process, ports|
+	expect(process.process.ports).to contain_exactly *ports.split(/, +/).map(&:to_i)
 end
 
-Given /([^ ]+) process listens on allocated port (\d+)/ do |name, port|
-	step "#{name} process option --listen with value localhost:#{_process_pool[name].process.ports[port.to_i - 1]}"
+Given /(#{PROCESS}) listens on allocated port (\d+)/ do |process, port|
+	step "#{process.name} process option --listen with value localhost:#{process.process.ports[port.to_i - 1]}"
 end
 

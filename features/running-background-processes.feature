@@ -24,7 +24,7 @@ Feature: Running background processes
 		And I wait 1 seconds for process to settle
 		Then bogus process should not be running
 		Then bogus process should be dead
-		Then bogus exit code should be 1
+		Then bogus process exit code should be 1
 
 	@running
 	Scenario: Process failing to terminate becomes jammed

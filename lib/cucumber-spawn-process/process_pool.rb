@@ -26,6 +26,8 @@ module CucumberSpawnProcess
 				@arguments = []
 			end
 
+			attr_reader :name
+
 			def extend(mod, options)
 				@extensions << mod
 				@options.merge! options

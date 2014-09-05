@@ -35,6 +35,10 @@ After do |scenario|
 	end
 end
 
+PROCESS = Transform /^([^ ]+) process$/ do |name|
+	_process_pool[name]
+end
+
 Given /^([^ ]+) background process executable is (.*)$/ do |name, path|
 	_process_pool.define(name, path, CucumberSpawnProcess::BackgroundProcess)
 end
@@ -43,24 +47,24 @@ Given /^([^ ]+) background process ruby script is (.*)$/ do |name, path|
 	_process_pool.define(name, path, CucumberSpawnProcess::LoadedBackgroundProcess)
 end
 
-Given /^([^ ]+) process is a server with (\d+) ports? allocated from (\d+) up/ do |name, port_count, base_port|
-	_process_pool[name].extend(CucumberSpawnProcess::BackgroundProcess::Server, port_count: port_count.to_i, base_port: base_port.to_i)
+Given /^(#{PROCESS}) is a server with (\d+) ports? allocated from (\d+) up/ do |process, port_count, base_port|
+	process.extend(CucumberSpawnProcess::BackgroundProcess::Server, port_count: port_count.to_i, base_port: base_port.to_i)
 end
 
-Given /^([^ ]+) process readiness timeout is (.*) seconds?$/ do |name, seconds|
-	_process_pool[name].options(ready_timeout: seconds.to_f)
+Given /^(#{PROCESS}) readiness timeout is (.*) seconds?$/ do |process, seconds|
+	process.options(ready_timeout: seconds.to_f)
 end
 
-Given /^([^ ]+) process termination timeout is (.*) seconds?$/ do |name, seconds|
-	_process_pool[name].options(term_timeout: seconds.to_f)
+Given /^(#{PROCESS}) termination timeout is (.*) seconds?$/ do |process, seconds|
+	process.options(term_timeout: seconds.to_f)
 end
 
-Given /^([^ ]+) process kill timeout is (.*) seconds?$/ do |name, seconds|
-	_process_pool[name].options(kill_timeout: seconds.to_f)
+Given /^(#{PROCESS}) kill timeout is (.*) seconds?$/ do |process, seconds|
+	process.options(kill_timeout: seconds.to_f)
 end
 
-Given /^([^ ]+) process is ready when log file contains (.*)/ do |name, log_line|
-	_process_pool[name].options(
+Given /^(#{PROCESS}) is ready when log file contains (.*)/ do |process, log_line|
+	process.options(
 		ready_test: ->(process) do
 			File::Tail::Logfile.tail(process.log_file, forward: 0, interval: 0.01, max_interval: 1, suspicious_interval: 4) do |line|
 				line.include?(log_line) and break true
@@ -69,8 +73,8 @@ Given /^([^ ]+) process is ready when log file contains (.*)/ do |name, log_line
 	)
 end
 
-Given /^([^ ]+) process is ready when URI (.*) response status is (.*)/ do |name, uri, status|
-	_process_pool[name].options(
+Given /^(#{PROCESS}) is ready when URI (.*) response status is (.*)/ do |process, uri, status|
+	process.options(
 		ready_test: ->(process) do
 			backoff = 0.06
 			grow = 2
@@ -88,159 +92,159 @@ Given /^([^ ]+) process is ready when URI (.*) response status is (.*)/ do |name
 	)
 end
 
-Given /^([^ ]+) process is refreshed with command (.*)/ do |name, command|
-	_process_pool[name].options(
+Given /^(#{PROCESS}) is refreshed with command (.*)/ do |process, command|
+	process.options(
 		refresh_action: ->(process) do
 			system command
 		end
 	)
 end
 
-Given /^([^ ]+) process logging is enabled/ do |name|
-	_process_pool[name].options(logging: true)
+Given /^(#{PROCESS}) logging is enabled/ do |process|
+	process.options(logging: true)
 end
 
-Given /^([^ ]+) process working directory is changed to (.*)/ do |name, dir|
-	_process_pool[name].working_directory(dir)
+Given /^(#{PROCESS}) working directory is changed to (.*)/ do |process, dir|
+	process.working_directory(dir)
 end
 
-Given /^([^ ]+) process working directory is the same as current working directory/ do |name|
-	_process_pool[name].working_directory(Dir.pwd)
+Given /^(#{PROCESS}) working directory is the same as current working directory/ do |process|
+	process.working_directory(Dir.pwd)
 end
 
-Given /^([^ ]+) process argument (.*)/ do |name, argument|
-	_process_pool[name].arguments << argument
+Given /^(#{PROCESS}) argument (.*)/ do |process, argument|
+	process.arguments << argument
 end
 
-Given /^([^ ]+) process file argument (.*)/ do |name, argument|
-	_process_pool[name].arguments << Pathname.new(argument)
+Given /^(#{PROCESS}) file argument (.*)/ do |process, argument|
+	process.arguments << Pathname.new(argument)
 end
 
-Given /^([^ ]+) process option (.*) with value (.*)/ do |name, option, value|
-	_process_pool[name].arguments << option
-	_process_pool[name].arguments << value
+Given /^(#{PROCESS}) option (.*) with value (.*)/ do |process, option, value|
+	process.arguments << option
+	process.arguments << value
 end
 
-Given /^([^ ]+) process option (.*) with file value (.*)/ do |name, option, value|
-	_process_pool[name].arguments << option
-	_process_pool[name].arguments << Pathname.new(value)
+Given /^(#{PROCESS}) option (.*) with file value (.*)/ do |process, option, value|
+	process.arguments << option
+	process.arguments << Pathname.new(value)
 end
 
-Given /^([^ ]+) process is running$/ do |name|
-	_process_pool[name].process.start
+Given /^(#{PROCESS}) is running$/ do |process|
+	process.process.start
 end
 
-Given /^fresh ([^ ]+) process is running$/ do |name|
-	_process_pool[name].process.running? ? _process_pool[name].process.refresh : _process_pool[name].process.start
+Given /^fresh (#{PROCESS}) is running$/ do |process|
+	process.process.running? ? process.process.refresh : process.process.start
 end
 
-When /^([^ ]+) process is stopped$/ do |name|
-	_process_pool[name].process.stop
+When /^(#{PROCESS}) is stopped$/ do |process|
+	process.process.stop
 end
 
-Given /^([^ ]+) process is ready$/ do |name|
-	_process_pool[name].process.verify
+Given /^(#{PROCESS}) is ready$/ do |process|
+	process.process.verify
 end
 
-Given /^([^ ]+) process is running and ready$/ do |name|
-	step "#{name} process is running"
-	step "#{name} process is ready"
+Given /^(#{PROCESS}) is running and ready$/ do |process|
+	step "#{process.name} process is running"
+	step "#{process.name} process is ready"
 end
 
-Given /^fresh ([^ ]+) process is running and ready$/ do |name|
-	step "fresh #{name} process is running"
-	step "#{name} process is ready"
+Given /^fresh (#{PROCESS}) is running and ready$/ do |process|
+	step "fresh #{process.name} process is running"
+	step "#{process.name} process is ready"
 end
 
-Given /^([^ ]+) process is refreshed$/ do |name|
-	_process_pool[name].process.refresh
+Given /^(#{PROCESS}) is refreshed$/ do |process|
+	process.process.refresh
 end
 
-Given /^([^ ]+) process is refreshed and ready$/ do |name|
-	step "#{name} process is refreshed"
-	step "#{name} process is ready"
+Given /^(#{PROCESS}) is refreshed and ready$/ do |process|
+	step "#{process.name} process is refreshed"
+	step "#{process.name} process is ready"
 end
 
 Given /^I wait ([^ ]+) seconds for process to settle$/ do |seconds|
 	sleep seconds.to_f
 end
 
-Then /^([^ ]+) process log should contain (.*)/ do |name, log_line|
-	expect(_process_pool[name].process.log_file.readlines).to include(
+Then /^(#{PROCESS}) log should contain (.*)/ do |process, log_line|
+	expect(process.process.log_file.readlines).to include(
 		a_string_including(log_line)
 	)
 end
 
-Then /^([^ ]+) process log should not contain (.*)/ do |name, log_line|
-	expect(_process_pool[name].process.log_file.readlines).to_not include(
+Then /^(#{PROCESS}) log should not contain (.*)/ do |process, log_line|
+	expect(process.process.log_file.readlines).to_not include(
 		a_string_including(log_line)
 	)
 end
 
-Then /^([^ ]+) process log should match (.*)/ do |name, regexp|
-	expect(_process_pool[name].process.log_file.readlines).to include(
+Then /^(#{PROCESS}) log should match (.*)/ do |process, regexp|
+	expect(process.process.log_file.readlines).to include(
 		a_string_matching(Regexp.new regexp)
 	)
 end
 
-Then /^([^ ]+) process log should not match (.*)/ do |name, regexp|
-	expect(_process_pool[name].process.log_file.readlines).to_not include(
+Then /^(#{PROCESS}) log should not match (.*)/ do |process, regexp|
+	expect(process.process.log_file.readlines).to_not include(
 		a_string_matching(Regexp.new regexp)
 	)
 end
 
-Then /^([^ ]+) process should be running/ do |name|
-	expect(_process_pool[name].process).to be_running
+Then /^(#{PROCESS}) should be running/ do |process|
+	expect(process.process).to be_running
 end
 
-Then /^([^ ]+) process should not be running/ do |name|
-	expect(_process_pool[name].process).to_not be_running
+Then /^(#{PROCESS}) should not be running/ do |process|
+	expect(process.process).to_not be_running
 end
 
-Then /^([^ ]+) process should be ready/ do |name|
-	expect(_process_pool[name].process).to be_ready
+Then /^(#{PROCESS}) should be ready/ do |process|
+	expect(process.process).to be_ready
 end
 
-Then /^([^ ]+) process should not be ready/ do |name|
-	expect(_process_pool[name].process).to_not be_ready
+Then /^(#{PROCESS}) should not be ready/ do |process|
+	expect(process.process).to_not be_ready
 end
 
-Then /^([^ ]+) process should be dead/ do |name|
-	expect(_process_pool[name].process).to be_dead
+Then /^(#{PROCESS}) should be dead/ do |process|
+	expect(process.process).to be_dead
 end
 
-Then /^([^ ]+) process should not be dead/ do |name|
-	expect(_process_pool[name].process).to_not be_dead
+Then /^(#{PROCESS}) should not be dead/ do |process|
+	expect(process.process).to_not be_dead
 end
 
-Then /^([^ ]+) process should be failed/ do |name|
-	expect(_process_pool[name].process).to be_failed
+Then /^(#{PROCESS}) should be failed/ do |process|
+	expect(process.process).to be_failed
 end
 
-Then /^([^ ]+) process should not be failed/ do |name|
-	expect(_process_pool[name].process).to_not be_failed
+Then /^(#{PROCESS}) should not be failed/ do |process|
+	expect(process.process).to_not be_failed
 end
 
-Then /^([^ ]+) process should be jammed/ do |name|
-	expect(_process_pool[name].process).to be_jammed
+Then /^(#{PROCESS}) should be jammed/ do |process|
+	expect(process.process).to be_jammed
 end
 
-Then /^([^ ]+) process should not be jammed/ do |name|
-	expect(_process_pool[name].process).to_not be_jammed
+Then /^(#{PROCESS}) should not be jammed/ do |process|
+	expect(process.process).to_not be_jammed
 end
 
-Then /^([^ ]+) exit code should be (\d+)$/ do |name, exit_code|
-	expect(_process_pool[name].process.exit_code).to eq(exit_code.to_i)
+Then /^(#{PROCESS}) exit code should be (\d+)$/ do |process, exit_code|
+	expect(process.process.exit_code).to eq(exit_code.to_i)
 end
 
-Then /^([^ ]+) process readiness timeout should be (.*)/ do |name, seconds|
-	expect(_process_pool[name].process.ready_timeout).to eq(seconds.to_f)
+Then /^(#{PROCESS}) readiness timeout should be (.*)/ do |process, seconds|
+	expect(process.process.ready_timeout).to eq(seconds.to_f)
 end
 
-Then /^([^ ]+) process termination timeout should be (.*)/ do |name, seconds|
-	expect(_process_pool[name].process.term_timeout).to eq(seconds.to_f)
+Then /^(#{PROCESS}) termination timeout should be (.*)/ do |process, seconds|
+	expect(process.process.term_timeout).to eq(seconds.to_f)
 end
 
-Then /^([^ ]+) process kill timeout should be (.*)/ do |name, seconds|
-	expect(_process_pool[name].process.kill_timeout).to eq(seconds.to_f)
+Then /^(#{PROCESS}) kill timeout should be (.*)/ do |process, seconds|
+	expect(process.process.kill_timeout).to eq(seconds.to_f)
 end
