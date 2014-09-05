@@ -1,6 +1,7 @@
 require_relative 'background_process'
 require_relative 'process_pool'
 require 'open-uri'
+require 'file-tail'
 
 def _process_pool(options = {})
 	@@_process_pool ||= CucumberSpawnProcess::ProcessPool.new(options)
@@ -56,15 +57,8 @@ end
 Given /^([^ ]+) process is ready when log file contains (.*)/ do |name, log_line|
 	_process_pool[name].options(
 		ready_test: ->(process) do
-			process.log_file.open do |log|
-				loop do
-					if line = log.gets
-						line.include?(log_line) and break true
-					elsif log.eof?
-						# wait for more data
-						sleep 0.1
-					end
-				end
+			File::Tail::Logfile.tail(process.log_file, forward: 0, interval: 0.01, max_interval: 1, suspicious_interval: 4) do |line|
+				line.include?(log_line) and break true
 			end
 		end
 	)
@@ -74,13 +68,15 @@ Given /^([^ ]+) process is ready when URI (.*) response status is (.*)/ do |name
 	_process_pool[name].options(
 		ready_test: ->(process) do
 			backoff = 0.06
-			grow = 1.5
+			grow = 2
+			max = 1
 
 			begin
 				open(uri).status.last.strip == status and break true
 			rescue Errno::ECONNREFUSED
 				sleep backoff
 				backoff *= grow
+				backoff = max if backoff > max
 				retry
 			end
 		end

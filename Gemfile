@@ -9,4 +9,5 @@ group :development do
 	gem 'daemon', '~> 1.2'
 	gem 'micromachine', '~> 1.1'
 	gem 'rufus-lru', '~> 1.0'
+	gem 'file-tail', '~> 1.0'
 end
