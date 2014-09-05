@@ -3,6 +3,7 @@ require_relative 'background_process_server'
 require_relative 'process_pool'
 require 'open-uri'
 require 'file-tail'
+require 'retries'
 
 def _process_pool(options = {})
 	@@_process_pool ||= CucumberSpawnProcess::ProcessPool.new(options)
@@ -36,7 +37,15 @@ After do |scenario|
 end
 
 PROCESS = Transform /^([^ ]+) process$/ do |name|
-	_process_pool[name]
+	@process = _process_pool[name]
+end
+
+PROCESS_LOG = Transform /^log$/ do |_|
+	@process.instance.log_file.readlines
+end
+
+PROCESS_LOG_FILE = Transform /^log file$/ do |_|
+	@process.instance.log_file
 end
 
 Given /^([^ ]+) background process executable is (.*)$/ do |name, path|
@@ -64,10 +73,19 @@ Given /^(#{PROCESS}) kill timeout is (.*) seconds?$/ do |process, seconds|
 end
 
 Given /^(#{PROCESS}) is ready when log file contains (.*)/ do |process, log_line|
+	# NOTE: use of process.log_file is needed to use process form the block (instance) and not form the step definition (process definition)
 	process.options(
 		ready_test: ->(process) do
-			File::Tail::Logfile.tail(process.log_file, forward: 0, interval: 0.01, max_interval: 1, suspicious_interval: 4) do |line|
-				line.include?(log_line) and break true
+			# NOTE: log file my not be crated strigh after process is started (spawned) so we need to retry
+			with_retries(
+				max_tries: 1000,
+				base_sleep_seconds: 0.01,
+				max_sleep_seconds: 1.0,
+				rescue: Errno::ENOENT
+			) do
+				File::Tail::Logfile.tail(process.log_file, forward: 0, interval: 0.01, max_interval: 1, suspicious_interval: 4) do |line|
+					line.include?(log_line) and break true
+				end
 			end
 		end
 	)
@@ -76,17 +94,15 @@ end
 Given /^(#{PROCESS}) is ready when URI (.*) response status is (.*)/ do |process, uri, status|
 	process.options(
 		ready_test: ->(process) do
-			backoff = 0.06
-			grow = 2
-			max = 1
-
 			begin
-				open(uri).status.last.strip == status and break true
-			rescue Errno::ECONNREFUSED
-				sleep backoff
-				backoff *= grow
-				backoff = max if backoff > max
-				retry
+				with_retries(
+					max_tries: 1000,
+					base_sleep_seconds: 0.06,
+					max_sleep_seconds: 1.0,
+					rescue: Errno::ECONNREFUSED
+				) do
+					open(uri).status.last.strip == status and break true
+				end
 			end
 		end
 	)
@@ -169,26 +185,26 @@ Given /^I wait ([^ ]+) seconds for process to settle$/ do |seconds|
 	sleep seconds.to_f
 end
 
-Then /^(#{PROCESS}) log should contain (.*)/ do |process, log_line|
-	expect(process.instance.log_file.readlines).to include(
+Then /^(#{PROCESS}) (log) should contain (.*)/ do |process, log, log_line|
+	expect(log).to include(
 		a_string_including(log_line)
 	)
 end
 
-Then /^(#{PROCESS}) log should not contain (.*)/ do |process, log_line|
-	expect(process.instance.log_file.readlines).to_not include(
+Then /^(#{PROCESS}) (log) should not contain (.*)/ do |process, log, log_line|
+	expect(log).to_not include(
 		a_string_including(log_line)
 	)
 end
 
-Then /^(#{PROCESS}) log should match (.*)/ do |process, regexp|
-	expect(process.instance.log_file.readlines).to include(
+Then /^(#{PROCESS}) (log) should match (.*)/ do |process, log, regexp|
+	expect(log).to include(
 		a_string_matching(Regexp.new regexp)
 	)
 end
 
-Then /^(#{PROCESS}) log should not match (.*)/ do |process, regexp|
-	expect(process.instance.log_file.readlines).to_not include(
+Then /^(#{PROCESS}) (log) should not match (.*)/ do |process, log, regexp|
+	expect(log).to_not include(
 		a_string_matching(Regexp.new regexp)
 	)
 end

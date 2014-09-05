@@ -10,4 +10,5 @@ group :development do
 	gem 'micromachine', '~> 1.1'
 	gem 'rufus-lru', '~> 1.0'
 	gem 'file-tail', '~> 1.0'
+	gem 'retries', '~> 0.0.5'
 end

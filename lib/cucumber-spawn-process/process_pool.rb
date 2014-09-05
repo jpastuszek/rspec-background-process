@@ -231,8 +231,8 @@ module CucumberSpawnProcess
 			end
 		end
 
-		def failed_instances
-			@pool.values.select do |instances|
+		def failed_instance
+			@pool.values.select do |instance|
 				instance.dead? or
 				instance.failed? or
 				instance.jammed?
