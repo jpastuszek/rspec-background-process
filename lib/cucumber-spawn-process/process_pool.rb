@@ -3,6 +3,7 @@ require 'tmpdir'
 require 'pathname'
 require 'rufus-lru'
 require 'set'
+require 'delegate'
 
 module CucumberSpawnProcess
 	class ProcessPool
@@ -45,17 +46,17 @@ module CucumberSpawnProcess
 				@arguments
 			end
 
-			def process
+			def instance
 				_key = key
 
 				# already crated
-				if process = @pool[_key]
+				if instance = @pool[_key]
 					# always make sure options are up to date with definition
-					process.reset_options(@options)
-					return process
+					instance.reset_options(@options)
+					return instance
 				end
 
-				process = @type.new(
+				instance = @type.new(
 					"#{@name}-#{_key}",
 					@path,
 					@arguments,
@@ -64,10 +65,10 @@ module CucumberSpawnProcess
 				)
 
 				@extensions.each do |mod|
-					process.extend(mod)
+					instance.extend(mod)
 				end
 
-				@pool[_key] = process
+				@pool[_key] = instance
 			end
 
 			def key
@@ -174,35 +175,35 @@ module CucumberSpawnProcess
 
 			@max_running = options.delete(:max_running) || 4
 
-			@pool = LRUPool.new(@max_running) do |key, process|
-				#puts "too many processes running, stopping: #{process.name}"
-				stats(process.name)[:lru_stopped] += 1
-				process.stop
+			@pool = LRUPool.new(@max_running) do |key, instance|
+				#puts "too many instances running, stopping: #{instance.name}"
+				stats(instance.name)[:lru_stopped] += 1
+				instance.stop
 			end
 
-			# keep track of running running
-			@pool.after_store do |key, process|
-				process.after_state_change do |new_state|
-					# we mark running before it is actually started to have a chance to stop over-limit process first
+			# keep track of running instances
+			@pool.after_store do |key, instance|
+				instance.after_state_change do |new_state|
+					# we mark running before it is actually started to have a chance to stop over-limit instance first
 					if new_state == :starting
 						@pool.running(key)
-						stats(process.name)[:started] += 1
+						stats(instance.name)[:started] += 1
 					end
 					@pool.not_running(key) if [:not_running, :dead, :jammed].include? new_state
 				end
 
 				# mark running if added while already running
-				@pool.running(key) if process.running?
+				@pool.running(key) if instance.running?
 
 				# init stats
-				stats(process.name)[:started] ||= 0
-				stats(process.name)[:lru_stopped] ||= 0
+				stats(instance.name)[:started] ||= 0
+				stats(instance.name)[:lru_stopped] ||= 0
 			end
 
 			# for storing shared data
 			@global_context = {}
 
-			# this are passed down to processes
+			# this are passed down to instance
 			@options = options.merge(global_context: @global_context)
 		end
 
@@ -230,13 +231,13 @@ module CucumberSpawnProcess
 			end
 		end
 
-		def failed_process
-			@pool.values.select do |process|
-				process.dead? or
-				process.failed? or
-				process.jammed?
-			end.sort_by do |process|
-				process.state_change_time
+		def failed_instances
+			@pool.values.select do |instances|
+				instance.dead? or
+				instance.failed? or
+				instance.jammed?
+			end.sort_by do |instance|
+				instance.state_change_time
 			end.last
 		end
 	end

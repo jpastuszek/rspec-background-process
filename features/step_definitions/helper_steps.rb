@@ -47,15 +47,15 @@ Then /^(#{PROCESS}) should fail to stop$/ do |process|
 end
 
 Given /we remember (#{PROCESS}) pid/ do |process|
-	(@process_pids ||= {})[process.name] = process.process.pid
+	(@process_pids ||= {})[process.name] = process.instance.pid
 end
 
 Then /^(#{PROCESS}) pid should be as remembered$/ do |process|
-	expect(process.process.pid).to eq((@process_pids ||= {})[process.name])
+	expect(process.instance.pid).to eq((@process_pids ||= {})[process.name])
 end
 
 Then /^(#{PROCESS}) pid should be different than remembered$/ do |process|
-	expect(process.process.pid).to_not eq((@process_pids ||= {})[process.name])
+	expect(process.instance.pid).to_not eq((@process_pids ||= {})[process.name])
 end
 
 Then /^kill myself/ do
@@ -90,7 +90,7 @@ Then /^(#{PROCESS}) reports it's current working directory to be the same as cur
 end
 
 Then /^(#{PROCESS}) reports it's current working directory to be same as log directory/ do |process|
-	step "#{process.name} process log should contain cwd: '#{process.process.log_file.dirname}'"
+	step "#{process.name} process log should contain cwd: '#{process.instance.log_file.dirname}'"
 end
 
 Then /^(#{PROCESS}) reports it's current working directory to be relative to current working directory by (.*)/ do |process, dir|
@@ -106,11 +106,11 @@ And /^current working directory is unchanged$/ do
 end
 
 When /^we remember (#{PROCESS}) reported current directory$/ do |process|
-	@process_cwd = process.process.log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first
+	@process_cwd = process.instance.log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first
 end
 
 When /^remembered process current directory is different from (#{PROCESS}) reported one/ do |process|
-	expect(process.process.log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first).to_not eq(@process_cwd)
+	expect(process.instance.log_file.readlines.grep(/cwd: '/).first.match(/cwd: '(.*)'/).captures.first).to_not eq(@process_cwd)
 end
 
 Then /stopping (#{PROCESS}) will not print anything/ do |process|
@@ -136,10 +136,10 @@ Then /stopping (#{PROCESS}) will report to STDERR/ do |process|
 end
 
 Then /(#{PROCESS}) should have ports? (.*) allocated/ do |process, ports|
-	expect(process.process.ports).to contain_exactly *ports.split(/, +/).map(&:to_i)
+	expect(process.instance.ports).to contain_exactly *ports.split(/, +/).map(&:to_i)
 end
 
 Given /(#{PROCESS}) listens on allocated port (\d+)/ do |process, port|
-	step "#{process.name} process option --listen with value localhost:#{process.process.ports[port.to_i - 1]}"
+	step "#{process.name} process option --listen with value localhost:#{process.instance.ports[port.to_i - 1]}"
 end
 

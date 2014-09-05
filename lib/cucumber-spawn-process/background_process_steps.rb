@@ -22,15 +22,15 @@ end
 After do |scenario|
 	_process_pool.reset_active
 	if scenario.failed?
-		if failed_process = _process_pool.failed_process
-			STDERR.puts "Last failed process state log: "
-			failed_process.state_log.each do |log_line|
+		if failed_instance = _process_pool.failed_instance
+			STDERR.puts "Last failed process instance state log: "
+			failed_instance.state_log.each do |log_line|
 				STDERR.puts "\t#{log_line}"
 			end
-			STDERR.puts "Working directory: #{failed_process.working_directory}"
-			STDERR.puts "Log file: #{failed_process.log_file}"
-			STDERR.puts "State: #{failed_process.state}"
-			STDERR.puts "Exit code: #{failed_process.exit_code}"
+			STDERR.puts "Working directory: #{failed_instance.working_directory}"
+			STDERR.puts "Log file: #{failed_instance.log_file}"
+			STDERR.puts "State: #{failed_instance.state}"
+			STDERR.puts "Exit code: #{failed_instance.exit_code}"
 		end
 	end
 end
@@ -131,19 +131,19 @@ Given /^(#{PROCESS}) option (.*) with file value (.*)/ do |process, option, valu
 end
 
 Given /^(#{PROCESS}) is running$/ do |process|
-	process.process.start
+	process.instance.start
 end
 
 Given /^fresh (#{PROCESS}) is running$/ do |process|
-	process.process.running? ? process.process.refresh : process.process.start
+	process.instance.running? ? process.instance.refresh : process.instance.start
 end
 
 When /^(#{PROCESS}) is stopped$/ do |process|
-	process.process.stop
+	process.instance.stop
 end
 
 Given /^(#{PROCESS}) is ready$/ do |process|
-	process.process.verify
+	process.instance.verify
 end
 
 Given /^(#{PROCESS}) is running and ready$/ do |process|
@@ -157,7 +157,7 @@ Given /^fresh (#{PROCESS}) is running and ready$/ do |process|
 end
 
 Given /^(#{PROCESS}) is refreshed$/ do |process|
-	process.process.refresh
+	process.instance.refresh
 end
 
 Given /^(#{PROCESS}) is refreshed and ready$/ do |process|
@@ -170,81 +170,81 @@ Given /^I wait ([^ ]+) seconds for process to settle$/ do |seconds|
 end
 
 Then /^(#{PROCESS}) log should contain (.*)/ do |process, log_line|
-	expect(process.process.log_file.readlines).to include(
+	expect(process.instance.log_file.readlines).to include(
 		a_string_including(log_line)
 	)
 end
 
 Then /^(#{PROCESS}) log should not contain (.*)/ do |process, log_line|
-	expect(process.process.log_file.readlines).to_not include(
+	expect(process.instance.log_file.readlines).to_not include(
 		a_string_including(log_line)
 	)
 end
 
 Then /^(#{PROCESS}) log should match (.*)/ do |process, regexp|
-	expect(process.process.log_file.readlines).to include(
+	expect(process.instance.log_file.readlines).to include(
 		a_string_matching(Regexp.new regexp)
 	)
 end
 
 Then /^(#{PROCESS}) log should not match (.*)/ do |process, regexp|
-	expect(process.process.log_file.readlines).to_not include(
+	expect(process.instance.log_file.readlines).to_not include(
 		a_string_matching(Regexp.new regexp)
 	)
 end
 
 Then /^(#{PROCESS}) should be running/ do |process|
-	expect(process.process).to be_running
+	expect(process.instance).to be_running
 end
 
 Then /^(#{PROCESS}) should not be running/ do |process|
-	expect(process.process).to_not be_running
+	expect(process.instance).to_not be_running
 end
 
 Then /^(#{PROCESS}) should be ready/ do |process|
-	expect(process.process).to be_ready
+	expect(process.instance).to be_ready
 end
 
 Then /^(#{PROCESS}) should not be ready/ do |process|
-	expect(process.process).to_not be_ready
+	expect(process.instance).to_not be_ready
 end
 
 Then /^(#{PROCESS}) should be dead/ do |process|
-	expect(process.process).to be_dead
+	expect(process.instance).to be_dead
 end
 
 Then /^(#{PROCESS}) should not be dead/ do |process|
-	expect(process.process).to_not be_dead
+	expect(process.instance).to_not be_dead
 end
 
 Then /^(#{PROCESS}) should be failed/ do |process|
-	expect(process.process).to be_failed
+	expect(process.instance).to be_failed
 end
 
 Then /^(#{PROCESS}) should not be failed/ do |process|
-	expect(process.process).to_not be_failed
+	expect(process.instance).to_not be_failed
 end
 
 Then /^(#{PROCESS}) should be jammed/ do |process|
-	expect(process.process).to be_jammed
+	expect(process.instance).to be_jammed
 end
 
 Then /^(#{PROCESS}) should not be jammed/ do |process|
-	expect(process.process).to_not be_jammed
+	expect(process.instance).to_not be_jammed
 end
 
 Then /^(#{PROCESS}) exit code should be (\d+)$/ do |process, exit_code|
-	expect(process.process.exit_code).to eq(exit_code.to_i)
+	expect(process.instance.exit_code).to eq(exit_code.to_i)
 end
 
 Then /^(#{PROCESS}) readiness timeout should be (.*)/ do |process, seconds|
-	expect(process.process.ready_timeout).to eq(seconds.to_f)
+	expect(process.instance.ready_timeout).to eq(seconds.to_f)
 end
 
 Then /^(#{PROCESS}) termination timeout should be (.*)/ do |process, seconds|
-	expect(process.process.term_timeout).to eq(seconds.to_f)
+	expect(process.instance.term_timeout).to eq(seconds.to_f)
 end
 
 Then /^(#{PROCESS}) kill timeout should be (.*)/ do |process, seconds|
-	expect(process.process.kill_timeout).to eq(seconds.to_f)
+	expect(process.instance.kill_timeout).to eq(seconds.to_f)
 end
