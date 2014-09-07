@@ -47,6 +47,8 @@ module CucumberSpawnProcess
 			end
 
 			def instance
+				# instance is requested
+				# we calculate key based on current definition
 				_key = key
 
 				# already crated
@@ -56,6 +58,7 @@ module CucumberSpawnProcess
 					return instance
 				end
 
+				# need to crate new one
 				instance = @type.new(
 					"#{@name}-#{_key}",
 					@path,
@@ -64,6 +67,7 @@ module CucumberSpawnProcess
 					@options
 				)
 
+				# ports get allocated here...
 				@extensions.each do |mod|
 					instance.extend(mod)
 				end

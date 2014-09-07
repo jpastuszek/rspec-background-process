@@ -4,14 +4,18 @@ Feature: Server process with port allocation
 	Background:
 		Given http-singleport background process ruby script is features/support/test_http_server
 		Given http-singleport process is a server with 1 port allocated from 12000 up
+
 		Given http-multiport background process ruby script is features/support/test_http_server
 		Given http-multiport process is a server with 4 port allocated from 14000 up
+
 		Given http-1 background process ruby script is features/support/test_http_server
 		Given http-1 process is a server with 2 port allocated from 15000 up
 		Given http-1 process is ready when log file contains starting
+
 		Given http-2 background process ruby script is features/support/test_http_server
 		Given http-2 process is a server with 2 port allocated from 16000 up
 		Given http-2 process is ready when log file contains starting
+
 		Given http-run background process ruby script is features/support/test_http_server
 		Given http-run process is a server with 1 port allocated from 17000 up
 
@@ -37,7 +41,7 @@ Feature: Server process with port allocation
 		And http-2 process is running and ready
 		Then http-2 process log should contain listening on port: 16001
 
-	Scenario: Server running on given port
-		Given http-run process listens on allocated port 1
-		Given http-run process is ready when URI http://localhost:17000/health_check response status is OK
+	Scenario: URL readiness check can replace port number with given port
+		Given http-run process option --listen with value localhost:<allocated port 1>
+		Given http-run process is ready when URI http://localhost:<allocated port 1>/health_check response status is OK
 		And http-run process is running and ready

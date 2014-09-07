@@ -48,6 +48,12 @@ PROCESS_LOG_FILE = Transform /^log file$/ do |_|
 	@process.instance.log_file
 end
 
+ALLOCATED_PORT = Transform /^allocated port (\d+)$/ do |port_no|
+	@port = @process.instance.ports[port_no.to_i - 1] or fail "no port #{port_no} allocated: #{process.instance.ports}"
+end
+
+#Transform /^\#{(.*)\}$/
+
 Given /^([^ ]+) background process executable is (.*)$/ do |name, path|
 	_process_pool.define(name, path, CucumberSpawnProcess::BackgroundProcess)
 end
@@ -93,6 +99,12 @@ end
 Given /^(#{PROCESS}) is ready when URI (.*) response status is (.*)/ do |process, uri, status|
 	process.options(
 		ready_test: ->(instance) do
+			uri.gsub!(/<allocated port (\d+)>/) do |port_no|
+				p instance
+				instance.ports[port_no.to_i - 1] or fail "no port #{port_no} allocated: #{instance.ports}"
+			end
+			p uri
+
 			begin
 				with_retries(
 					max_tries: 1000,
