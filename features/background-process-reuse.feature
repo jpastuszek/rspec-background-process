@@ -137,14 +137,14 @@ Feature: Background process reuse through different scenarios and features
 	@reuse @extension
 	Scenario: Process with same extensions is reused
 		Given test-extension background process ruby script is features/support/test_process
-		Given test-extension process is a server with 1 port allocated from 12000 up
+		Given test-extension process is a server with 1 port allocated from 666 up
 		And fresh test-extension process is running
 		When we remember test-extension process pid
 
 	@reuse @extension
 	Scenario: Process with same extensions is reused
 		Given test-extension background process ruby script is features/support/test_process
-		Given test-extension process is a server with 1 port allocated from 12000 up
+		Given test-extension process is a server with 1 port allocated from 666 up
 		And fresh test-extension process is running
 		And test-extension process pid should be different than remembered
 
@@ -157,6 +157,6 @@ Feature: Background process reuse through different scenarios and features
 	@reuse @extension
 	Scenario: New process started for different process type
 		Given test-extension background process ruby script is features/support/test_process
-		Given test-extension process is a server with 1 port allocated from 12000 up
+		Given test-extension process is a server with 1 port allocated from 666 up
 		And fresh test-extension process is running
 		And test-extension process pid should be different than remembered

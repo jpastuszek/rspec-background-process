@@ -106,10 +106,8 @@ Given /^(#{PROCESS}) is ready when URI (.*) response status is (.*)/ do |process
 	process.options(
 		ready_test: ->(instance) do
 			uri.gsub!(/<allocated port (\d+)>/) do |port_no|
-				p instance
-				instance.ports[port_no.to_i - 1] or fail "no port #{port_no} allocated: #{instance.ports}"
+				instance.allocated_port(port_no.to_i)
 			end
-			p uri
 
 			begin
 				with_retries(

@@ -140,11 +140,3 @@ end
 Then /(#{PROCESS}) should have ports? (.*) allocated/ do |process, ports|
 	expect(process.instance.ports).to contain_exactly *ports.split(/, +/).map(&:to_i)
 end
-
-Given /(#{PROCESS}) listens on (#{ALLOCATED_PORT})/ do |process, port|
-	p process
-	p port
-	# I cannot know the prot of process that will be lunched after this argument modifeis the key!
-	step "#{process.name} process option --listen with value localhost:#{port}"
-end
-

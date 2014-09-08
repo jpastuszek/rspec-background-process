@@ -17,10 +17,22 @@ module CucumberSpawnProcess
 				end until (global_ports & @ports).empty?
 
 				@options[:global_context][:ports] = global_ports + @ports
+
+				# update arguments with actual port numbers
+				args = Shellwords.split(@command).map do |arg|
+					arg.gsub(/<allocated port (\d)>/) do |port|
+						allocated_port($1)
+					end
+				end
+				@command = Shellwords.join(args)
 			end
 
 			def ports
 				@ports
+			end
+
+			def allocated_port(port_no)
+				@ports[port_no.to_i - 1] or fail "no port #{port_no} allocated: #{@ports}"
 			end
 
 			def to_s
