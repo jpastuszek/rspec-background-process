@@ -8,15 +8,23 @@ Feature: Background process reuse through different scenarios and features
 	Background:
 		Given test background process ruby script is features/support/test_process
 
-	@reuse @refreshing
+	@reuse @name
 	Scenario: Process is started once
 		Given test process is running
 		When we remember test process pid
 
-	@reuse @refreshing
+	@reuse @name
 	Scenario: Process is started once
 		Given test process is running
 		Then test process pid should be as remembered
+
+	@reuse @name
+	Scenario: New process started for different process name
+		And fresh test process is running
+		When we remember test process pid
+		Given test2 background process ruby script is features/support/test_process
+		And fresh test2 process is running
+		And test2 process pid should be different than remembered
 
 	@reuse @refreshing
 	Scenario: Explicit process refreshing
@@ -60,6 +68,18 @@ Feature: Background process reuse through different scenarios and features
 		Then test process pid should be different than remembered
 
 	@reuse @arguments
+	Scenario: Process with same argument list is reused
+		Given test process argument foo bar
+		Given fresh test process is running
+		When we remember test process pid
+
+	@reuse @arguments
+	Scenario: Process with same argument list is reused
+		Given test process argument foo bar
+		Given fresh test process is running
+		Then test process pid should be different than remembered
+
+	@reuse @arguments
 	Scenario: New process started for different argument list
 		Given test process is ready when log file contains hello world
 		Given fresh test process is running and ready
@@ -75,28 +95,32 @@ Feature: Background process reuse through different scenarios and features
 		And test process pid should be different than remembered
 
 	@reuse @arguments @file
-	Scenario: New process started for different argument list pointing to file with different content
-		Given test process is ready when log file contains hello world
+	Scenario: Process with same argument list pointing to file with same content is reused
 		Given test process file argument /tmp/processtest-config
 		Given file /tmp/processtest-config content is foo bar
-		And fresh test process is running and ready
+		And fresh test process is running
+		When we remember test process pid
+
+	@reuse @arguments @file
+	Scenario: Process with same argument list pointing to file with same content is reused
+		Given test process file argument /tmp/processtest-config
+		Given file /tmp/processtest-config content is foo bar
+		And fresh test process is running
+		And test process pid should be different than remembered
+
+	@reuse @arguments @file
+	Scenario: New process started for different argument list pointing to file with different content
+		Given test process file argument /tmp/processtest-config
+		Given file /tmp/processtest-config content is foo bar
+		And fresh test process is running
 		When we remember test process pid
 
 	@reuse @arguments @file
 	Scenario: New process started for different argument list pointing to file with different content
-		Given test process is ready when log file contains hello world
 		Given test process file argument /tmp/processtest-config
 		Given file /tmp/processtest-config content is baz bar
-		And test process is running and ready
+		And test process is running
 		And test process pid should be different than remembered
-
-	@reuse @name
-	Scenario: New process started for different process name
-		And fresh test process is running
-		When we remember test process pid
-		Given test2 background process ruby script is features/support/test_process
-		And fresh test2 process is running
-		And test2 process pid should be different than remembered
 
 	@reuse @type
 	Scenario: New process started for different process type
@@ -109,6 +133,20 @@ Feature: Background process reuse through different scenarios and features
 		Given test-type background process executable is features/support/test_process
 		And fresh test-type process is running
 		And test-type process pid should be different than remembered
+
+	@reuse @extension
+	Scenario: Process with same extensions is reused
+		Given test-extension background process ruby script is features/support/test_process
+		Given test-extension process is a server with 1 port allocated from 12000 up
+		And fresh test-extension process is running
+		When we remember test-extension process pid
+
+	@reuse @extension
+	Scenario: Process with same extensions is reused
+		Given test-extension background process ruby script is features/support/test_process
+		Given test-extension process is a server with 1 port allocated from 12000 up
+		And fresh test-extension process is running
+		And test-extension process pid should be different than remembered
 
 	@reuse @extension
 	Scenario: New process started for different process extensions
