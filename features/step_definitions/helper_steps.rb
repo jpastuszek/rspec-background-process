@@ -22,6 +22,20 @@ Given /(#{PROCESS}) readiness fails with exception/ do |process|
 	)
 end
 
+Then /defining ([^ ]+) background process again should fail/ do |name|
+	expect {
+		step "#{name} background process executable is features/support/test_process"
+	}.to raise_error RuntimeError, "redefining background process '#{name}' is not allowed"
+end
+
+Then /following steps should fail with ([^ ]+): (.*)/ do |error, msg, steps|
+	steps.raw.each do |step|
+		expect {
+			step step.first
+		}.to raise_error eval(error), msg
+	end
+end
+
 Then /^(#{PROCESS}) should fail to become ready in time$/ do |process|
 	expect {
 		step "#{process.name} process is ready"
