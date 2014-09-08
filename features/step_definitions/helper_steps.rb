@@ -94,6 +94,10 @@ Then /^file (.*) should not exist$/ do |file|
 	expect(Pathname.new(file)).to_not be_file
 end
 
+Then /^file (.*) should contain (.*)/ do |file, content|
+	expect(Pathname.new(file).read.strip).to eq content
+end
+
 Given /^file (.*) content is (.*)/ do |file, content|
 	step "file #{file} does not exist"
 	Pathname.new(file).open('w') do |file|

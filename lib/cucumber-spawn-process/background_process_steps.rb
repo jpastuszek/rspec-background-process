@@ -85,6 +85,8 @@ end
 Given /^(#{PROCESS}) is ready when log file contains (.*)/ do |process, log_line|
 	process.options(
 		ready_test: ->(instance) do
+			log_line = instance.render(log_line)
+
 			# NOTE: log file my not be crated just after process is started (spawned) so we need to retry
 			with_retries(
 				max_tries: 1000,
@@ -103,9 +105,7 @@ end
 Given /^(#{PROCESS}) is ready when URI (.*) response status is (.*)/ do |process, uri, status|
 	process.options(
 		ready_test: ->(instance) do
-			uri.gsub!(/<allocated port (\d+)>/) do |port_no|
-				instance.allocated_port(port_no.to_i)
-			end
+			uri = instance.render(uri)
 
 			begin
 				with_retries(
@@ -123,7 +123,9 @@ end
 
 Given /^(#{PROCESS}) is refreshed with command (.*)/ do |process, command|
 	process.options(
-		refresh_action: ->(process) do
+		refresh_action: ->(instance) do
+			command = instance.render(command)
+
 			system command
 		end
 	)

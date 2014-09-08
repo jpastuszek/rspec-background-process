@@ -5,6 +5,12 @@ module CucumberSpawnProcess
 				mod.allocate_ports
 			end
 
+			def template_variables
+				super.merge(
+					/allocated port (\d)/ => ->(port_no) { allocated_port(port_no) }
+				)
+			end
+
 			def allocate_ports
 				base_port = @options[:base_port] or fail "no base_port option set for #{self}: #{@options}"
 				port_count = @options[:port_count] or fail "no port_count option set for #{self}: #{@options}"
@@ -17,14 +23,6 @@ module CucumberSpawnProcess
 				end until (global_ports & @ports).empty?
 
 				@options[:global_context][:ports] = global_ports + @ports
-
-				# update arguments with actual port numbers
-				args = Shellwords.split(@command).map do |arg|
-					arg.gsub(/<allocated port (\d)>/) do |port|
-						allocated_port($1)
-					end
-				end
-				@command = Shellwords.join(args)
 			end
 
 			def ports

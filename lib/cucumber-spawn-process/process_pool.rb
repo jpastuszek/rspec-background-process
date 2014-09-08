@@ -213,8 +213,22 @@ module CucumberSpawnProcess
 			# for storing shared data
 			@global_context = {}
 
+			# for filling template strings with actual instance data
+			@template_renderer = ->(variables, string) {
+				out = string.dup
+				variables.each do |regexp, source|
+					out.gsub!(/<#{regexp}>/) do
+						source.call(*$~.captures)
+					end
+				end
+				out
+			}
+
 			# this are passed down to instance
-			@options = options.merge(global_context: @global_context)
+			@options = options.merge(
+				global_context:  @global_context,
+				template_renderer: @template_renderer
+			)
 		end
 
 		def define(name, path, type)

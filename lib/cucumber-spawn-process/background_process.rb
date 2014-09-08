@@ -74,7 +74,7 @@ module CucumberSpawnProcess
 			)
 
 			@_fsm.on(:starting) do
-				puts "starting: `#{@command}` log file: #{@log_file}"
+				puts "starting: `#{command}` log file: #{@log_file}"
 			end
 
 			@_fsm.when(:started,
@@ -109,11 +109,38 @@ module CucumberSpawnProcess
 				ready: :jammed
 			)
 
+			@template_renderer = options[:template_renderer]
+
 			# make sure we stop on exit
 			my_pid = Process.pid
 			at_exit do
 				stop if Process.pid == my_pid and running? #only run in master process
 			end
+		end
+
+		def render(str)
+			if @template_renderer
+				@template_renderer.call(template_variables, str)
+			else
+				str
+			end
+		end
+
+		def template_variables
+			{
+				/working directory/ => -> { working_directory },
+				/pid file/ => -> { pid_file },
+				/log file/ => -> { log_file },
+				/name/ => -> { name },
+			}
+		end
+
+		def command
+			# update arguments with actual port numbers, working directories etc. (see template variables)
+			args = Shellwords.split(@command).map do |arg|
+				render(arg)
+			end
+			Shellwords.join(args)
 		end
 
 		attr_reader :name
@@ -279,7 +306,7 @@ module CucumberSpawnProcess
 		end
 
 		def to_s
-			"#{name}[#{@command}](#{state})"
+			"#{name}[#{command}](#{state})"
 		end
 
 		private
@@ -300,7 +327,7 @@ module CucumberSpawnProcess
 			Daemon.daemonize(@pid_file, @log_file) do |log|
 				prepare_process(log, 'exec')
 
-				exec(@command)
+				exec(command)
 			end
 		end
 
@@ -339,7 +366,7 @@ module CucumberSpawnProcess
 		# cmd will be loaded in forked ruby interpreter and arguments passed via ENV['ARGS']
 		# This way starting new process will be much faster since ruby VM is already loaded
 		def spawn
-			cmd = Shellwords.split(@command)
+			cmd = Shellwords.split(command)
 			file = cmd.shift
 
 			puts "loading ruby script: #{file}"
