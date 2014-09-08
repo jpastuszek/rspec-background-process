@@ -20,8 +20,14 @@ end
 #	_process_pool.report_stats
 #end
 
-After do |scenario|
+#_process_pool(logging: true)
+
+Before do |scenario|
+	_process_pool.reset_definitions
 	_process_pool.reset_active
+end
+
+After do |scenario|
 	if scenario.failed?
 		if failed_instance = _process_pool.failed_instance
 			STDERR.puts "Last failed process instance state log: "

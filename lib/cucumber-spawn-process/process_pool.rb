@@ -13,8 +13,8 @@ module CucumberSpawnProcess
 				@name = name
 				@path = path
 				@type = type
-				@extensions = Set.new
 
+				@extensions = Set.new
 				@options = {
 					ready_timeout: 10,
 					term_timeout: 10,
@@ -47,6 +47,12 @@ module CucumberSpawnProcess
 			end
 
 			def instance
+				# disallow changes to the definition once we have instantiated
+				@options.freeze
+				@arguments.freeze
+				@working_directory.freeze
+				@extensions.freeze
+
 				# instance is requested
 				# we calculate key based on current definition
 				_key = key
@@ -174,7 +180,7 @@ module CucumberSpawnProcess
 		end
 
 		def initialize(options)
-			@definitions = {}
+			reset_definitions
 			@stats = {}
 
 			@max_running = options.delete(:max_running) || 4
@@ -212,11 +218,16 @@ module CucumberSpawnProcess
 		end
 
 		def define(name, path, type)
+			@definitions.member? name and fail "redefining background process '#{name}' is not allowed"
 			@definitions[name] = ProcessDefinition.new(@pool, name, path, type, @options)
 		end
 
 		def [](name)
 			@definitions[name] or fail "process #{name} not defined"
+		end
+
+		def reset_definitions
+			@definitions = {}
 		end
 
 		def reset_active

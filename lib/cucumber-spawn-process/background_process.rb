@@ -127,6 +127,7 @@ module CucumberSpawnProcess
 		attr_reader :state_log
 
 		def reset_options(opts)
+			puts "resetting options: #{opts}"
 			@logging = opts[:logging]
 
 			@ready_timeout = opts[:ready_timeout] || 10

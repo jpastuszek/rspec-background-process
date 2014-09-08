@@ -47,15 +47,19 @@ Then /^(#{PROCESS}) should fail to stop$/ do |process|
 end
 
 Given /we remember (#{PROCESS}) pid/ do |process|
-	(@process_pids ||= {})[process.name] = process.instance.pid
+	(@@process_pids ||= {})[process.name] = process.instance.pid
 end
 
 Then /^(#{PROCESS}) pid should be as remembered$/ do |process|
-	expect(process.instance.pid).to eq((@process_pids ||= {})[process.name])
+	expect(@@process_pids).to_not be_nil
+	expect(@@process_pids[process.name]).to_not be_nil
+	expect(process.instance.pid).to eq(@@process_pids[process.name])
 end
 
 Then /^(#{PROCESS}) pid should be different than remembered$/ do |process|
-	expect(process.instance.pid).to_not eq((@process_pids ||= {})[process.name])
+	expect(@@process_pids).to_not be_nil
+	expect(@@process_pids[process.name]).to_not be_nil
+	expect(process.instance.pid).to_not eq(@@process_pids[process.name])
 end
 
 Then /^kill myself/ do
