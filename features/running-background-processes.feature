@@ -5,11 +5,7 @@ Feature: Running background processes
 
 	Background:
 		Given test background process executable is features/support/test_process
-		Given bogus background process executable is features/support/bogus
 		Given timeouts background process ruby script is features/support/test_process
-		Given unkillable background process executable is features/support/test_process
-		And unkillable process termination timeout is 0.0 second
-		And unkillable process kill timeout is 0.0 second
 
 	@running
 	Scenario: Starting a background process
@@ -21,6 +17,7 @@ Feature: Running background processes
 
 	@running
 	Scenario: Process dying after startup becomes dead
+		Given bogus background process executable is features/support/bogus
 		Given bogus process is running
 		And I wait 1 seconds for process to settle
 		Then bogus process should not be running
@@ -34,7 +31,7 @@ Feature: Running background processes
 		And timeouts process kill timeout should be 10
 
 	@running @timeouts
-	Scenario: Default time outs can be redefined
+	Scenario: Custom time outs
 		Given timeouts process readiness timeout is 1.666 second
 		And timeouts process termination timeout is 1.666 second
 		And timeouts process kill timeout is 1.666 second
@@ -43,8 +40,29 @@ Feature: Running background processes
 		And timeouts process termination timeout should be 1.666
 		And timeouts process kill timeout should be 1.666
 
+	@running @timeouts @reset
+	Scenario: Time outs are reset to default for each scenario
+		Given timeouts process readiness timeout is 1.666 second
+		And timeouts process termination timeout is 1.666 second
+		And timeouts process kill timeout is 1.666 second
+		Given fresh timeouts process is running
+		Then timeouts process readiness timeout should be 1.666
+		And timeouts process termination timeout should be 1.666
+		And timeouts process kill timeout should be 1.666
+		When we remember timeouts process pid
+
+	@running @timeouts @reset
+	Scenario: Time outs are reset to default for each scenario
+		Then timeouts process readiness timeout should be 10
+		And timeouts process termination timeout should be 10
+		And timeouts process kill timeout should be 10
+		Then timeouts process pid should be as remembered
+
 	@running
 	Scenario: Process failing to terminate becomes jammed
+		Given unkillable background process executable is features/support/test_process
+		And unkillable process termination timeout is 0.0 second
+		And unkillable process kill timeout is 0.0 second
 		Given unkillable process is running
 		Then unkillable process should fail to stop
 		Then unkillable process should be jammed

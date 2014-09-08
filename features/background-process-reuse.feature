@@ -4,18 +4,9 @@ Feature: Background process reuse through different scenarios and features
 	New processes will be spawned for different set of arguments required for given scenario.
 	Pathname arguments will be checksumed to detect configuration changes as well.
 	Process settings are reset for each scenario.
-	There is a limit on how many processes will be kept between scenarios.
 
 	Background:
 		Given test background process ruby script is features/support/test_process
-		Given timeouts background process ruby script is features/support/test_process
-		Given test-ready background process ruby script is features/support/test_process
-		Given test-ready process is ready when log file contains started
-		Given test-1 background process ruby script is features/support/test_process
-		Given test-2 background process ruby script is features/support/test_process
-		Given test-3 background process ruby script is features/support/test_process
-		Given test-4 background process ruby script is features/support/test_process
-		Given test-5 background process ruby script is features/support/test_process
 
 	@reuse @refreshing
 	Scenario: Process is started once
@@ -48,29 +39,22 @@ Feature: Background process reuse through different scenarios and features
 		Then file /tmp/processtest1 should exist
 		Then test process pid should be as remembered
 
-	@reuse @refreshing
-	Scenario: Custom refresh command
-		# restored default refresh method (restart) for next scenario
+	@reuse @refreshing @reset
+	Scenario: Custom refresh command is reset to default for each scenario
+		Given file /tmp/processtest1 does not exist
+		Given test process is refreshed with command touch /tmp/processtest1
+		Given test process is running
+		And test process is refreshed
+		Then file /tmp/processtest1 should exist
+
+	@reuse @refreshing @reset
+	Scenario: Custom refresh command is reset to default for each scenario
 		Given file /tmp/processtest1 does not exist
 		And test process is running
 		When we remember test process pid
 		And test process is refreshed
 		Then file /tmp/processtest1 should not exist
 		Then test process pid should be different than remembered
-
-	@reuse @readiness
-	Scenario: Readiness check is reset to default for each scenario
-		Given test-ready process is ready when log file contains hello world
-		And fresh test-ready process is running and ready
-		Then test-ready process should be ready
-		Then test-ready process log should contain hello world
-		Then test-ready process log should not contain started
-
-	@reuse @readiness
-	Scenario: Readiness check is reset to default for each scenario
-		And test-ready process is running and ready
-		Then test-ready process should be ready
-		Then test-ready process log should contain started
 
 	@reuse @arguments
 	Scenario: New process started for different argument list
@@ -115,24 +99,3 @@ Feature: Background process reuse through different scenarios and features
 		Given test process is ready when log file contains hello world
 		Given fresh test process is running and ready
 		Then test process log should contain ARGV: []
-
-	@reuse @lru
-	Scenario: Up to 4 most recently used processes are kept running between scenario but all within scenario using them
-		Given test-1 process is running
-		Given test-2 process is running
-		Given test-3 process is running
-		Given test-4 process is running
-		Given test-5 process is running
-		Then test-1 process should be running
-		Then test-2 process should be running
-		Then test-3 process should be running
-		Then test-4 process should be running
-		Then test-5 process should be running
-
-	@reuse @lru
-	Scenario: Up to 4 most recently used processes are kept running between scenario but all within scenario using them
-		Then test-1 process should not be running
-		Then test-2 process should be running
-		Then test-3 process should be running
-		Then test-4 process should be running
-		Then test-5 process should be running
