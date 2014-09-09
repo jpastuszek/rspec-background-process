@@ -27,7 +27,14 @@ module CucumberSpawnProcess
 				@arguments = []
 			end
 
-			attr_reader :name
+			attr_accessor :name
+
+			def initialize_copy(old)
+				# need own copy
+				@extensions = @extensions.dup
+				@options = @options.dup
+				@arguments = @arguments.dup
+			end
 
 			def extend(mod, options)
 				@extensions << mod
@@ -236,6 +243,13 @@ module CucumberSpawnProcess
 		def define(name, path, type)
 			@definitions.member? name and fail "redefining background process '#{name}' is not allowed"
 			@definitions[name] = ProcessDefinition.new(@pool, name, path, type, @options)
+		end
+
+		def clone(name, process)
+			@definitions.member? name and fail "redefining background process '#{name}' is not allowed (clone)"
+			new = process.dup
+			new.name = name
+			@definitions[name] = new
 		end
 
 		def [](name)

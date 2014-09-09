@@ -44,16 +44,24 @@ end
 
 #### Process definition
 
+PROCESS_DEFINITION_NAME = Transform /^([^ ]+) background process/ do |name|
+	name
+end
+
 PROCESS = Transform /^([^ ]+) process$/ do |name|
 	@process = _process_pool[name]
 end
 
-Given /^([^ ]+) background process executable is (.*)$/ do |name, path|
+Given /^(#{PROCESS_DEFINITION_NAME}) executable is (.*)$/ do |name, path|
 	_process_pool.define(name, path, CucumberSpawnProcess::BackgroundProcess)
 end
 
-Given /^([^ ]+) background process ruby script is (.*)$/ do |name, path|
+Given /(#{PROCESS_DEFINITION_NAME}) ruby script is (.*)$/ do |name, path|
 	_process_pool.define(name, path, CucumberSpawnProcess::LoadedBackgroundProcess)
+end
+
+Given /(#{PROCESS_DEFINITION_NAME}) is based on (#{PROCESS}) definition/ do |name, process|
+	_process_pool.clone(name, process)
 end
 
 Given /^(#{PROCESS}) is a server with (\d+) ports? allocated from (\d+) up/ do |process, port_count, base_port|
@@ -95,7 +103,7 @@ end
 Given /^(#{PROCESS}) is ready when URI (.*) response status is (.*)/ do |process, uri, status|
 	process.options(
 		ready_test: ->(instance) do
-			uri = instance.render(uri)
+			_uri = instance.render(uri) # NOTE: new variable (_uri) is needed or strange things happen...
 
 			begin
 				with_retries(
@@ -104,7 +112,7 @@ Given /^(#{PROCESS}) is ready when URI (.*) response status is (.*)/ do |process
 					max_sleep_seconds: 1.0,
 					rescue: Errno::ECONNREFUSED
 				) do
-					open(uri).status.last.strip == status and break true
+					open(_uri).status.last.strip == status and break true
 				end
 			end
 		end
@@ -114,9 +122,9 @@ end
 Given /^(#{PROCESS}) is refreshed with command (.*)/ do |process, command|
 	process.options(
 		refresh_action: ->(instance) do
-			command = instance.render(command)
+			_command = instance.render(command)
 
-			system command
+			system _command
 		end
 	)
 end
