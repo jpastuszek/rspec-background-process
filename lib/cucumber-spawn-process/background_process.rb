@@ -33,7 +33,10 @@ module CucumberSpawnProcess
 
 		def initialize(name, cmd, args = [], working_directory = nil, options = {})
 			@name = name
-			@command = Shellwords.join([(Pathname.new(Dir.pwd) + cmd).cleanpath.to_s, *args.map(&:to_s)])
+
+			@exec = (Pathname.new(Dir.pwd) + cmd).cleanpath.to_s
+			@args = args.map(&:to_s)
+			@command = nil # built on startup
 
 			@pid = nil
 			@process = nil
@@ -74,7 +77,9 @@ module CucumberSpawnProcess
 			)
 
 			@_fsm.on(:starting) do
-				puts "starting: `#{command}` log file: #{@log_file}"
+				puts "starting: `#{@command}`"
+				puts "working directory: #{@working_directory}"
+				puts "log file: #{@log_file}"
 			end
 
 			@_fsm.when(:started,
@@ -135,12 +140,9 @@ module CucumberSpawnProcess
 			}
 		end
 
-		def command
+		def render_command
 			# update arguments with actual port numbers, working directories etc. (see template variables)
-			args = Shellwords.split(@command).map do |arg|
-				render(arg)
-			end
-			Shellwords.join(args)
+			Shellwords.join([@exec, *@args.map{|arg| render(arg)}])
 		end
 
 		attr_reader :name
@@ -154,7 +156,6 @@ module CucumberSpawnProcess
 		attr_reader :state_log
 
 		def reset_options(opts)
-			puts "resetting options: #{opts}"
 			@logging = opts[:logging]
 
 			@ready_timeout = opts[:ready_timeout] || 10
@@ -213,8 +214,8 @@ module CucumberSpawnProcess
 			return self if trigger? :stopped
 			trigger? :starting or fail "can't start when: #{state}"
 
+			@command ||= render_command
 			trigger :starting
-
 			@pid, @process = spawn
 
 			@process_watcher = Thread.new do
@@ -306,7 +307,7 @@ module CucumberSpawnProcess
 		end
 
 		def to_s
-			"#{name}[#{command}](#{state})"
+			"#{name}[#{@exec}](#{state})"
 		end
 
 		private
@@ -326,8 +327,7 @@ module CucumberSpawnProcess
 		def spawn
 			Daemon.daemonize(@pid_file, @log_file) do |log|
 				prepare_process(log, 'exec')
-
-				exec(command)
+				exec(@command)
 			end
 		end
 
@@ -366,7 +366,7 @@ module CucumberSpawnProcess
 		# cmd will be loaded in forked ruby interpreter and arguments passed via ENV['ARGS']
 		# This way starting new process will be much faster since ruby VM is already loaded
 		def spawn
-			cmd = Shellwords.split(command)
+			cmd = Shellwords.split(@command)
 			file = cmd.shift
 
 			puts "loading ruby script: #{file}"

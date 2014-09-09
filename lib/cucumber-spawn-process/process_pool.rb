@@ -216,7 +216,9 @@ module CucumberSpawnProcess
 			# for filling template strings with actual instance data
 			@template_renderer = ->(variables, string) {
 				out = string.dup
-				variables.each do |regexp, source|
+				variables.merge(
+					/project directory/ => -> { Dir.pwd.to_s }
+				).each do |regexp, source|
 					out.gsub!(/<#{regexp}>/) do
 						source.call(*$~.captures)
 					end
