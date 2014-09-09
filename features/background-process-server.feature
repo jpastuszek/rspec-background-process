@@ -13,25 +13,25 @@ Feature: Server process with port allocation
 
 	@server @port
 	Scenario: Server instance gets given port allocated
-		Then http-singleport process should have port 12000 allocated
+		Then http-singleport process instance should have port 12000 allocated
 
 	@server @port
 	Scenario: New server instances get next port number allocated
-		Then http-singleport process should have port 12000 allocated
+		Then http-singleport process instance should have port 12000 allocated
 
 	@server @port
 	Scenario: New server instances get next port number allocated
 		Given http-singleport process argument foo bar
-		Then http-singleport process should have port 12001 allocated
+		Then http-singleport process instance should have port 12001 allocated
 
 	@server @port @multiport
 	Scenario: New server instances get next set of ports number allocated
-		Then http-multiport process should have port 14000, 14001, 14002, 14003 allocated
+		Then http-multiport process instance should have port 14000, 14001, 14002, 14003 allocated
 
 	@server @port @multiport
 	Scenario: New server instances get next set of ports number allocated
 		Given http-multiport process argument foo bar
-		Then http-multiport process should have port 14004, 14005, 14006, 14007 allocated
+		Then http-multiport process instance should have port 14004, 14005, 14006, 14007 allocated
 
 	@server @port @passing
 	Scenario: Passing port numbers to process arguments
@@ -39,15 +39,15 @@ Feature: Server process with port allocation
 		And http-1 process is a server with 2 port allocated from 15000 up
 		And http-1 process is ready when log file contains starting
 		Given http-1 process option --listen with value localhost:<allocated port 1>
-		And http-1 process is running and ready
-		Then http-1 process log should contain listening on port: 15000
+		And http-1 process instance is running and ready
+		Then http-1 process instance log should contain listening on port: 15000
 
 		Given http-2 background process ruby script is features/support/test_http_server
 		And http-2 process is a server with 2 port allocated from 16000 up
 		And http-2 process is ready when log file contains starting
 		Given http-2 process option --listen with value localhost:<allocated port 2>
-		And http-2 process is running and ready
-		Then http-2 process log should contain listening on port: 16001
+		And http-2 process instance is running and ready
+		Then http-2 process instance log should contain listening on port: 16001
 
 	@server @port @passing
 	Scenario: Passing port numbers to log file ready
@@ -55,8 +55,8 @@ Feature: Server process with port allocation
 		And http-ready process is a server with 2 port allocated from 15100 up
 		Given http-ready process option --listen with value localhost:<allocated port 1>
 		And http-ready process is ready when log file contains localhost:<allocated port 1>
-		And http-ready process is running and ready
-		Then http-ready process log should contain listening on port: 15100
+		And http-ready process instance is running and ready
+		Then http-ready process instance log should contain listening on port: 15100
 
 	@server @port @passing
 	Scenario: Passing port numbers to refresh command
@@ -66,12 +66,12 @@ Feature: Server process with port allocation
 		And http-refresh process is ready when log file contains listening on port
 		Given http-refresh process option --listen with value localhost:<allocated port 1>
 		Given http-refresh process is refreshed with command echo '<allocated port 1>' > /tmp/processtest213
-		And http-refresh process is running and ready
-		Given http-refresh process is refreshed
+		And http-refresh process instance is running and ready
+		Given http-refresh process instance is refreshed
 		Then file /tmp/processtest213 should contain 15213
 
 	@server @port @passing
 	Scenario: URL readiness check can replace port number with given port
 		Given http-run process option --listen with value localhost:<allocated port 1>
 		Given http-run process is ready when URI http://localhost:<allocated port 1>/health_check response status is OK
-		And http-run process is running and ready
+		And http-run process instance is running and ready

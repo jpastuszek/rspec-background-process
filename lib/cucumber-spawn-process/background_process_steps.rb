@@ -42,20 +42,10 @@ After do |scenario|
 	end
 end
 
+#### Process definition
+
 PROCESS = Transform /^([^ ]+) process$/ do |name|
 	@process = _process_pool[name]
-end
-
-PROCESS_LOG = Transform /^log$/ do |_|
-	@process.instance.log_file.readlines
-end
-
-PROCESS_LOG_FILE = Transform /^log file$/ do |_|
-	@process.instance.log_file
-end
-
-ALLOCATED_PORT = Transform /^allocated port (\d+)$/ do |port_no|
-	@port = @process.instance.allocated_port(port_no.to_i)
 end
 
 Given /^([^ ]+) background process executable is (.*)$/ do |name, path|
@@ -161,121 +151,136 @@ Given /^(#{PROCESS}) option (.*) with file value (.*)/ do |process, option, valu
 	process.arguments << Pathname.new(value)
 end
 
-Given /^(#{PROCESS}) is running$/ do |process|
-	process.instance.start
+#### Instance control and queries
+
+INSTANCE = Transform /^([^ ]+) process instance$/ do |name|
+	@instance = _process_pool[name].instance
 end
 
-Given /^fresh (#{PROCESS}) is running$/ do |process|
-	process.instance.running? ? process.instance.refresh : process.instance.start
+PROCESS_LOG = Transform /^log$/ do |_|
+	@instance.log_file.readlines
 end
 
-When /^(#{PROCESS}) is stopped$/ do |process|
-	process.instance.stop
+PROCESS_LOG_FILE = Transform /^log file$/ do |_|
+	@instance.log_file
 end
 
-Given /^(#{PROCESS}) is ready$/ do |process|
-	process.instance.verify
+ALLOCATED_PORT = Transform /^allocated port (\d+)$/ do |port_no|
+	@port = @instance.allocated_port(port_no.to_i)
 end
 
-Given /^(#{PROCESS}) is running and ready$/ do |process|
-	step "#{process.name} process is running"
-	step "#{process.name} process is ready"
+Given /^(#{INSTANCE}) is running$/ do |instance|
+	instance.start
 end
 
-Given /^fresh (#{PROCESS}) is running and ready$/ do |process|
-	step "fresh #{process.name} process is running"
-	step "#{process.name} process is ready"
+Given /^fresh (#{INSTANCE}) is running$/ do |instance|
+	instance.running? ? instance.refresh : instance.start
 end
 
-Given /^(#{PROCESS}) is refreshed$/ do |process|
-	process.instance.refresh
+When /^(#{INSTANCE}) is stopped$/ do |instance|
+	instance.stop
 end
 
-Given /^(#{PROCESS}) is refreshed and ready$/ do |process|
-	step "#{process.name} process is refreshed"
-	step "#{process.name} process is ready"
+Given /^(#{INSTANCE}) is ready$/ do |instance|
+	instance.verify
 end
 
-Given /^I wait ([^ ]+) seconds for process to settle$/ do |seconds|
-	sleep seconds.to_f
+Given /^(#{INSTANCE}) is running and ready$/ do |instance|
+	step "#{instance.name} process instance is running"
+	step "#{instance.name} process instance is ready"
 end
 
-Then /^(#{PROCESS}) (log) should contain (.*)/ do |process, log, log_line|
+Given /^fresh (#{INSTANCE}) is running and ready$/ do |instance|
+	step "fresh #{instance.name} process instance is running"
+	step "#{instance.name} process instance is ready"
+end
+
+Given /^(#{INSTANCE}) is refreshed$/ do |instance|
+	instance.refresh
+end
+
+Given /^(#{INSTANCE}) is refreshed and ready$/ do |instance|
+	step "#{instance.name} process instance is refreshed"
+	step "#{instance.name} process instance is ready"
+end
+
+Then /^(#{INSTANCE}) (log) should contain (.*)/ do |instance, log, log_line|
 	expect(log).to include(
 		a_string_including(log_line)
 	)
 end
 
-Then /^(#{PROCESS}) (log) should not contain (.*)/ do |process, log, log_line|
+Then /^(#{INSTANCE}) (log) should not contain (.*)/ do |instance, log, log_line|
 	expect(log).to_not include(
 		a_string_including(log_line)
 	)
 end
 
-Then /^(#{PROCESS}) (log) should match (.*)/ do |process, log, regexp|
+Then /^(#{INSTANCE}) (log) should match (.*)/ do |instance, log, regexp|
 	expect(log).to include(
 		a_string_matching(Regexp.new regexp)
 	)
 end
 
-Then /^(#{PROCESS}) (log) should not match (.*)/ do |process, log, regexp|
+Then /^(#{INSTANCE}) (log) should not match (.*)/ do |instance, log, regexp|
 	expect(log).to_not include(
 		a_string_matching(Regexp.new regexp)
 	)
 end
 
-Then /^(#{PROCESS}) should be running/ do |process|
-	expect(process.instance).to be_running
+Then /^(#{INSTANCE}) should be running/ do |instance|
+	expect(instance).to be_running
 end
 
-Then /^(#{PROCESS}) should not be running/ do |process|
-	expect(process.instance).to_not be_running
+Then /^(#{INSTANCE}) should not be running/ do |instance|
+	expect(instance).to_not be_running
 end
 
-Then /^(#{PROCESS}) should be ready/ do |process|
-	expect(process.instance).to be_ready
+Then /^(#{INSTANCE}) should be ready/ do |instance|
+	expect(instance).to be_ready
 end
 
-Then /^(#{PROCESS}) should not be ready/ do |process|
-	expect(process.instance).to_not be_ready
+Then /^(#{INSTANCE}) should not be ready/ do |instance|
+	expect(instance).to_not be_ready
 end
 
-Then /^(#{PROCESS}) should be dead/ do |process|
-	expect(process.instance).to be_dead
+Then /^(#{INSTANCE}) should be dead/ do |instance|
+	expect(instance).to be_dead
 end
 
-Then /^(#{PROCESS}) should not be dead/ do |process|
-	expect(process.instance).to_not be_dead
+Then /^(#{INSTANCE}) should not be dead/ do |instance|
+	expect(instance).to_not be_dead
 end
 
-Then /^(#{PROCESS}) should be failed/ do |process|
-	expect(process.instance).to be_failed
+Then /^(#{INSTANCE}) should be failed/ do |instance|
+	expect(instance).to be_failed
 end
 
-Then /^(#{PROCESS}) should not be failed/ do |process|
-	expect(process.instance).to_not be_failed
+Then /^(#{INSTANCE}) should not be failed/ do |instance|
+	expect(instance).to_not be_failed
 end
 
-Then /^(#{PROCESS}) should be jammed/ do |process|
-	expect(process.instance).to be_jammed
+Then /^(#{INSTANCE}) should be jammed/ do |instance|
+	expect(instance).to be_jammed
 end
 
-Then /^(#{PROCESS}) should not be jammed/ do |process|
-	expect(process.instance).to_not be_jammed
+Then /^(#{INSTANCE}) should not be jammed/ do |instance|
+	expect(instance).to_not be_jammed
 end
 
-Then /^(#{PROCESS}) exit code should be (\d+)$/ do |process, exit_code|
-	expect(process.instance.exit_code).to eq(exit_code.to_i)
+Then /^(#{INSTANCE}) readiness timeout should be (.*) seconds?/ do |instance, seconds|
+	expect(instance.ready_timeout).to eq(seconds.to_f)
 end
 
-Then /^(#{PROCESS}) readiness timeout should be (.*)/ do |process, seconds|
-	expect(process.instance.ready_timeout).to eq(seconds.to_f)
+Then /^(#{INSTANCE}) termination timeout should be (.*) seconds?/ do |instance, seconds|
+	expect(instance.term_timeout).to eq(seconds.to_f)
 end
 
-Then /^(#{PROCESS}) termination timeout should be (.*)/ do |process, seconds|
-	expect(process.instance.term_timeout).to eq(seconds.to_f)
+Then /^(#{INSTANCE}) kill timeout should be (.*) seconds?/ do |instance, seconds|
+	expect(instance.kill_timeout).to eq(seconds.to_f)
 end
 
-Then /^(#{PROCESS}) kill timeout should be (.*)/ do |process, seconds|
-	expect(process.instance.kill_timeout).to eq(seconds.to_f)
+Then /^(#{INSTANCE}) exit code should be (\d+)$/ do |instance, exit_code|
+	expect(instance.exit_code).to eq(exit_code.to_i)
 end
+

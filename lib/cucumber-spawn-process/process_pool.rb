@@ -66,7 +66,7 @@ module CucumberSpawnProcess
 
 				# need to crate new one
 				instance = @type.new(
-					"#{@name}-#{_key}",
+					@name,
 					@path,
 					@arguments,
 					@working_directory || ["#{@name}-", "-#{_key}"],

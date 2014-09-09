@@ -7,16 +7,16 @@ Feature: Loading background processes
 
 	@loading
 	Scenario: Loading a background process
-		Given loaded process is running
-		And I wait 1 seconds for process to settle
-		Then loaded process log should contain ENV['PROCESS_SPAWN_TYPE']: load
+		Given loaded process instance is running
+		And I wait 1 seconds for process instance to settle
+		Then loaded process instance log should contain ENV['PROCESS_SPAWN_TYPE']: load
 
 	@loading @arguments
 	Scenario: Loaded process receives arguments as usual (emulated)
 		Given loaded process is ready when log file contains hello world
 		Given loaded process argument foo bar
 		Given loaded process argument baz
-		And loaded process is running and ready
-		Then loaded process log should contain ARGV: ["foo bar", "baz"]
-		Then loaded process log should match \$0: .*features/support/test_process
-		Then loaded process log should contain $*: ["foo bar", "baz"]
+		And loaded process instance is running and ready
+		Then loaded process instance log should contain ARGV: ["foo bar", "baz"]
+		Then loaded process instance log should match \$0: .*features/support/test_process
+		Then loaded process instance log should contain $*: ["foo bar", "baz"]

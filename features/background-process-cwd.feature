@@ -13,41 +13,41 @@ Feature: Managing current working directory
 
 	@cwd @ruby
 	Scenario: By default process is started in unique temporary directory
-		Given fresh ruby process is running and ready
-		When we remember ruby process reported current directory
-		Given fresh ruby2 process is running and ready
-		Then remembered process current directory is different from ruby2 process reported one
+		Given fresh ruby process instance is running and ready
+		When we remember ruby process instance reported current directory
+		Given fresh ruby2 process instance is running and ready
+		Then remembered process current directory is different from ruby2 process instance reported one
 
 	@cwd @exec
 	Scenario: By default process is started in unique temporary directory
-		Given fresh exec process is running and ready
-		When we remember exec process reported current directory
-		Given fresh exec2 process is running and ready
-		Then remembered process current directory is different from exec2 process reported one
+		Given fresh exec process instance is running and ready
+		When we remember exec process instance reported current directory
+		Given fresh exec2 process instance is running and ready
+		Then remembered process current directory is different from exec2 process instance reported one
 
 	@cwd @ruby
 	Scenario: Process current directory changes does not affect our test current directory
 		Given we remember current working directory
-		And fresh ruby process is running and ready
+		And fresh ruby process instance is running and ready
 		Then current working directory is unchanged
 
 	@cwd @exec
 	Scenario: Process current directory changes does not affect our test current directory
 		Given we remember current working directory
-		And fresh exec process is running and ready
+		And fresh exec process instance is running and ready
 		Then current working directory is unchanged
 
 	@cwd
 	Scenario: Process current working directory configurable to current working directory
 		Given we remember current working directory
 		Given ruby process working directory is the same as current working directory
-		Given fresh ruby process is running and ready
+		Given fresh ruby process instance is running and ready
 		Then current working directory is unchanged
-		Then ruby process reports it's current working directory to be the same as current directory
+		Then ruby process instance reports it's current working directory to be the same as current directory
 
 	@cwd
 	Scenario: The current working directory should be configurable to provided directory
 		Given ruby process working directory is changed to tmp/test
-		Given fresh ruby process is running and ready
-		Then ruby process reports it's current working directory to be relative to current working directory by tmp/test
+		Given fresh ruby process instance is running and ready
+		Then ruby process instance reports it's current working directory to be relative to current working directory by tmp/test
 

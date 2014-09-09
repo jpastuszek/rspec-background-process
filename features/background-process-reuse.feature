@@ -10,153 +10,153 @@ Feature: Background process reuse through different scenarios and features
 
 	@reuse @name
 	Scenario: Process is started once
-		Given test process is running
-		When we remember test process pid
+		Given test process instance is running
+		When we remember test process instance pid
 
 	@reuse @name
 	Scenario: Process is started once
-		Given test process is running
-		Then test process pid should be as remembered
+		Given test process instance is running
+		Then test process instance pid should be as remembered
 
 	@reuse @name
 	Scenario: New process started for different process name
-		And fresh test process is running
-		When we remember test process pid
+		And fresh test process instance is running
+		When we remember test process instance pid
 		Given test2 background process ruby script is features/support/test_process
-		And fresh test2 process is running
-		And test2 process pid should be different than remembered
+		And fresh test2 process instance is running
+		And test2 process instance pid should be different than remembered
 
 	@reuse @refreshing
 	Scenario: Explicit process refreshing
-		Given test process is running
-		When we remember test process pid
-		Given test process is refreshed
-		Then test process pid should be different than remembered
+		Given test process instance is running
+		When we remember test process instance pid
+		Given test process instance is refreshed
+		Then test process instance pid should be different than remembered
 
 	@reuse @refreshing
 	Scenario: Implicit process refreshing
-		Given fresh test process is running
-		When we remember test process pid
-		Given fresh test process is running
-		Then test process pid should be different than remembered
+		Given fresh test process instance is running
+		When we remember test process instance pid
+		Given fresh test process instance is running
+		Then test process instance pid should be different than remembered
 
 	@reuse @refreshing
 	Scenario: Custom refresh command
 		Given file /tmp/processtest1 does not exist
 		Given test process is refreshed with command touch /tmp/processtest1
-		Given test process is running
-		When we remember test process pid
-		And test process is refreshed
+		Given test process instance is running
+		When we remember test process instance pid
+		And test process instance is refreshed
 		Then file /tmp/processtest1 should exist
-		Then test process pid should be as remembered
+		Then test process instance pid should be as remembered
 
 	@reuse @refreshing @reset
 	Scenario: Custom refresh command is reset to default for each scenario
 		Given file /tmp/processtest1 does not exist
 		Given test process is refreshed with command touch /tmp/processtest1
-		Given test process is running
-		And test process is refreshed
+		Given test process instance is running
+		And test process instance is refreshed
 		Then file /tmp/processtest1 should exist
 
 	@reuse @refreshing @reset
 	Scenario: Custom refresh command is reset to default for each scenario
 		Given file /tmp/processtest1 does not exist
-		And test process is running
-		When we remember test process pid
-		And test process is refreshed
+		And test process instance is running
+		When we remember test process instance pid
+		And test process instance is refreshed
 		Then file /tmp/processtest1 should not exist
-		Then test process pid should be different than remembered
+		Then test process instance pid should be different than remembered
 
 	@reuse @arguments
 	Scenario: Process with same argument list is reused
 		Given test process argument foo bar
-		Given fresh test process is running
-		When we remember test process pid
+		Given fresh test process instance is running
+		When we remember test process instance pid
 
 	@reuse @arguments
 	Scenario: Process with same argument list is reused
 		Given test process argument foo bar
-		Given fresh test process is running
-		Then test process pid should be different than remembered
+		Given fresh test process instance is running
+		Then test process instance pid should be different than remembered
 
 	@reuse @arguments
 	Scenario: New process started for different argument list
 		Given test process is ready when log file contains hello world
-		Given fresh test process is running and ready
-		Then test process log should contain ARGV: []
-		When we remember test process pid
+		Given fresh test process instance is running and ready
+		Then test process instance log should contain ARGV: []
+		When we remember test process instance pid
 
 	@reuse @arguments
 	Scenario: New process started for different argument list
 		Given test process is ready when log file contains hello world
 		Given test process argument foo bar
-		And test process is running and ready
-		Then test process log should contain ARGV: ["foo bar"]
-		And test process pid should be different than remembered
+		And test process instance is running and ready
+		Then test process instance log should contain ARGV: ["foo bar"]
+		And test process instance pid should be different than remembered
 
 	@reuse @arguments @file
 	Scenario: Process with same argument list pointing to file with same content is reused
 		Given test process file argument /tmp/processtest-config
 		Given file /tmp/processtest-config content is foo bar
-		And fresh test process is running
-		When we remember test process pid
+		And fresh test process instance is running
+		When we remember test process instance pid
 
 	@reuse @arguments @file
 	Scenario: Process with same argument list pointing to file with same content is reused
 		Given test process file argument /tmp/processtest-config
 		Given file /tmp/processtest-config content is foo bar
-		And fresh test process is running
-		And test process pid should be different than remembered
+		And fresh test process instance is running
+		And test process instance pid should be different than remembered
 
 	@reuse @arguments @file
 	Scenario: New process started for different argument list pointing to file with different content
 		Given test process file argument /tmp/processtest-config
 		Given file /tmp/processtest-config content is foo bar
-		And fresh test process is running
-		When we remember test process pid
+		And fresh test process instance is running
+		When we remember test process instance pid
 
 	@reuse @arguments @file
 	Scenario: New process started for different argument list pointing to file with different content
 		Given test process file argument /tmp/processtest-config
 		Given file /tmp/processtest-config content is baz bar
-		And test process is running
-		And test process pid should be different than remembered
+		And test process instance is running
+		And test process instance pid should be different than remembered
 
 	@reuse @type
 	Scenario: New process started for different process type
 		Given test-type background process ruby script is features/support/test_process
-		And fresh test-type process is running
-		When we remember test-type process pid
+		And fresh test-type process instance is running
+		When we remember test-type process instance pid
 
 	@reuse @type
 	Scenario: New process started for different process type
 		Given test-type background process executable is features/support/test_process
-		And fresh test-type process is running
-		And test-type process pid should be different than remembered
+		And fresh test-type process instance is running
+		And test-type process instance pid should be different than remembered
 
 	@reuse @extension
 	Scenario: Process with same extensions is reused
 		Given test-extension background process ruby script is features/support/test_process
 		Given test-extension process is a server with 1 port allocated from 666 up
-		And fresh test-extension process is running
-		When we remember test-extension process pid
+		And fresh test-extension process instance is running
+		When we remember test-extension process instance pid
 
 	@reuse @extension
 	Scenario: Process with same extensions is reused
 		Given test-extension background process ruby script is features/support/test_process
 		Given test-extension process is a server with 1 port allocated from 666 up
-		And fresh test-extension process is running
-		And test-extension process pid should be different than remembered
+		And fresh test-extension process instance is running
+		And test-extension process instance pid should be different than remembered
 
 	@reuse @extension
 	Scenario: New process started for different process extensions
 		Given test-extension background process ruby script is features/support/test_process
-		And fresh test-extension process is running
-		When we remember test-extension process pid
+		And fresh test-extension process instance is running
+		When we remember test-extension process instance pid
 
 	@reuse @extension
 	Scenario: New process started for different process type
 		Given test-extension background process ruby script is features/support/test_process
 		Given test-extension process is a server with 1 port allocated from 666 up
-		And fresh test-extension process is running
-		And test-extension process pid should be different than remembered
+		And fresh test-extension process instance is running
+		And test-extension process instance pid should be different than remembered
