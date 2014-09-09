@@ -1,7 +1,7 @@
-Feature: Cloning defined instance
-	Sometimes we just want to change one aspect of already defined and possibly running instance to test sometghin.
+Feature: Cloning defined process
+	Sometimes we just want to change one aspect of already defined process with possibly running instance.
 
-	Scenario: Cloning instance definition with new argument and different ready test
+	Scenario: Cloning process definition with new argument and different readiness test
 		Given source background process ruby script is features/support/test_process
 		Given source process argument foo bar
 		And source process is ready when log file contains hello world
