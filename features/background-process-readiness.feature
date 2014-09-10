@@ -51,7 +51,8 @@ Feature: Background process readiness verification
 
 	@readiness @reset
 	Scenario: Readiness check is reset to default for each scenario
-		And test-ok process instance is running and ready
+		And test-ok process instance is running
+		And test-ok process instance is verified
 		Then test-ok process instance log should contain started
 		Then test-ok process instance pid should be as remembered
 

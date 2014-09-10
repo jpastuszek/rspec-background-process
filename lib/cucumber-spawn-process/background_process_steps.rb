@@ -190,6 +190,10 @@ When /^(#{INSTANCE}) is stopped$/ do |instance|
 end
 
 Given /^(#{INSTANCE}) is ready$/ do |instance|
+	instance.ready? or instance.verify
+end
+
+Given /^(#{INSTANCE}) is verified$/ do |instance|
 	instance.verify
 end
 
