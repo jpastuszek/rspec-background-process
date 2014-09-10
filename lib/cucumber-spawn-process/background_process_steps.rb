@@ -91,9 +91,9 @@ Given /^(#{PROCESS}) is ready when log file contains (.*)/ do |process, log_line
 
 			# NOTE: log file my not be crated just after process is started (spawned) so we need to retry
 			with_retries(
-				max_tries: 1000,
+				max_tries: 10000,
 				base_sleep_seconds: 0.01,
-				max_sleep_seconds: 1.0,
+				max_sleep_seconds: 0.2,
 				rescue: Errno::ENOENT
 			) do
 				File::Tail::Logfile.tail(instance.log_file, forward: 0, interval: 0.01, max_interval: 1, suspicious_interval: 4) do |line|
@@ -111,9 +111,9 @@ Given /^(#{PROCESS}) is ready when URI (.*) response status is (.*)/ do |process
 
 			begin
 				with_retries(
-					max_tries: 1000,
+					max_tries: 10000,
 					base_sleep_seconds: 0.06,
-					max_sleep_seconds: 1.0,
+					max_sleep_seconds: 0.2,
 					rescue: Errno::ECONNREFUSED
 				) do
 					open(_uri).status.last.strip == status and break true
