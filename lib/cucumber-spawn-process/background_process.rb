@@ -1,3 +1,4 @@
+require 'timeout'
 require 'pathname'
 require 'tmpdir'
 require 'daemon'
