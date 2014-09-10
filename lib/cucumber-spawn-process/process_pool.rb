@@ -115,7 +115,7 @@ module CucumberSpawnProcess
 			end
 		end
 
-		class LRUPool < Hash
+		class LRUPool
 			class VoidHash < Hash
 				def []=(key, value)
 					value
@@ -123,6 +123,8 @@ module CucumberSpawnProcess
 			end
 
 			def initialize(max_running, &lru_stop)
+				@all = {}
+				@max_running = max_running
 				@running_keep = max_running > 0 ? LruHash.new(max_running) : VoidHash.new
 				@running_all = Set[]
 				@active = Set[]
@@ -131,34 +133,43 @@ module CucumberSpawnProcess
 				@lru_stop = lru_stop
 			end
 
+			def to_s
+				"LRUPool[all: #{@all.length}, running: #{@running_all.length}, active: #{@active.map(&:to_s).join(',')}, keep: #{@running_keep.length}]"
+			end
+
 			def []=(key, value)
 				@active << key
-				super
+				@all[key] = value
 				@after_store.each{|callback| callback.call(key, value)}
 			end
 
 			def [](key)
-				if self.member? key
+				if @all.member? key
 					@active << key
 					@running_keep[key] # bump on use if on running LRU list
 				end
-				super
+				@all[key]
 			end
 
 			def delete(key)
 				@running_keep.delete(key)
 				@running_all.delete(key)
 				@active.delete(key)
-				super
+				@all.delete(key)
+			end
+
+			def instances
+				@all.values
 			end
 
 			def reset_active
+				puts "WARNING: There are more active processes than max running allowed! Consider increasing max running from #{@max_running} to #{@active.length} or more." if @max_running < @active.length
 				@active = Set.new
 				trim!
 			end
 
 			def running(key)
-				return unless member? key
+				return unless @all.member? key
 				@running_keep[key] = key
 				@running_all << key
 				trim!
@@ -177,7 +188,7 @@ module CucumberSpawnProcess
 
 			def trim!
 				to_stop.each do |key|
-					@lru_stop.call(key, self[key])
+					@lru_stop.call(key, @all[key])
 				end
 			end
 
@@ -193,8 +204,8 @@ module CucumberSpawnProcess
 			@max_running = options.delete(:max_running) || 4
 
 			@pool = LRUPool.new(@max_running) do |key, instance|
-				#puts "too many instances running, stopping: #{instance.name}"
-				stats(instance.name)[:lru_stopped] += 1
+				#puts "too many instances running, stopping: #{instance.name}[#{key}]; #{@pool}"
+				stats("#{instance.name}[#{key}]")[:lru_stopped] += 1
 				instance.stop
 			end
 
@@ -203,8 +214,9 @@ module CucumberSpawnProcess
 				instance.after_state_change do |new_state|
 					# we mark running before it is actually started to have a chance to stop over-limit instance first
 					if new_state == :starting
+						#puts "new instance running: #{instance.name}[#{key}]"
 						@pool.running(key)
-						stats(instance.name)[:started] += 1
+						stats("#{instance.name}[#{key}]")[:started] += 1
 					end
 					@pool.not_running(key) if [:not_running, :dead, :jammed].include? new_state
 				end
@@ -213,8 +225,8 @@ module CucumberSpawnProcess
 				@pool.running(key) if instance.running?
 
 				# init stats
-				stats(instance.name)[:started] ||= 0
-				stats(instance.name)[:lru_stopped] ||= 0
+				stats("#{instance.name}[#{key}]")[:started] ||= 0
+				stats("#{instance.name}[#{key}]")[:lru_stopped] ||= 0
 			end
 
 			# for storing shared data
@@ -270,14 +282,14 @@ module CucumberSpawnProcess
 
 		def report_stats
 			puts
-			puts "Process pool stats:"
+			puts "Process pool stats (max running: #{@max_running}):"
 			@stats.each do |key, stats|
 				puts "#{key}: #{stats.map{|k, v| "#{k}: #{v}"}.join(' ')}"
 			end
 		end
 
 		def failed_instance
-			@pool.values.select do |instance|
+			@pool.instances.select do |instance|
 				instance.dead? or
 				instance.failed? or
 				instance.jammed?
