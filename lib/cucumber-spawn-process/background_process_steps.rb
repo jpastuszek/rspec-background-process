@@ -162,7 +162,8 @@ end
 #### Instance control and queries
 
 INSTANCE = Transform /^([^ ]+) process instance$/ do |name|
-	@instance = _process_pool[name].instance
+	@process = _process_pool[name]
+	@instance = @process.instance
 end
 
 PROCESS_LOG = Transform /^log$/ do |_|
@@ -197,23 +198,23 @@ Given /^(#{INSTANCE}) is verified$/ do |instance|
 	instance.verify
 end
 
-Given /^(#{INSTANCE}) is running and ready$/ do |instance|
-	step "#{instance.name} process instance is running"
-	step "#{instance.name} process instance is ready"
+Given /^(#{PROCESS}) instance is running and ready$/ do |process|
+	step "#{process.name} process instance is running"
+	step "#{process.name} process instance is ready"
 end
 
-Given /^fresh (#{INSTANCE}) is running and ready$/ do |instance|
-	step "fresh #{instance.name} process instance is running"
-	step "#{instance.name} process instance is ready"
+Given /^fresh (#{PROCESS}) instance is running and ready$/ do |process|
+	step "fresh #{process.name} process instance is running"
+	step "#{process.name} process instance is ready"
 end
 
 Given /^(#{INSTANCE}) is refreshed$/ do |instance|
 	instance.refresh
 end
 
-Given /^(#{INSTANCE}) is refreshed and ready$/ do |instance|
-	step "#{instance.name} process instance is refreshed"
-	step "#{instance.name} process instance is ready"
+Given /^(#{PROCESS}) instance is refreshed and ready$/ do |process|
+	step "#{process.name} process instance is refreshed"
+	step "#{process.name} process instance is ready"
 end
 
 Then /^(#{INSTANCE}) (log) should contain (.*)/ do |instance, log, log_line|
