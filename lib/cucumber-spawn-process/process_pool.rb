@@ -14,6 +14,8 @@ module CucumberSpawnProcess
 				@path = path
 				@type = type
 
+				@unique_by_name = options.member?(:unique_by_name) ? options[:unique_by_name] : true
+
 				@extensions = Set.new
 				@options = {
 					ready_timeout: 10,
@@ -71,12 +73,15 @@ module CucumberSpawnProcess
 					return instance
 				end
 
+				# can only use parts of the key for instance name
+				name = @unique_by_name ? @name : Pathname.new(@path).basename
+
 				# need to crate new one
 				instance = @type.new(
-					@name,
+					"#{name}-#{_key}",
 					@path,
 					@arguments,
-					@working_directory || ["#{@name}-", "-#{_key}"],
+					@working_directory || [name, _key],
 					@options
 				)
 
@@ -90,7 +95,7 @@ module CucumberSpawnProcess
 
 			def key
 				hash = Digest::SHA256.new
-				hash.update @name
+				hash.update @name if @unique_by_name
 				hash.update @path
 				hash.update @type.name
 				@extensions.each do |mod|
@@ -205,7 +210,7 @@ module CucumberSpawnProcess
 
 			@pool = LRUPool.new(@max_running) do |key, instance|
 				#puts "too many instances running, stopping: #{instance.name}[#{key}]; #{@pool}"
-				stats("#{instance.name}[#{key}]")[:lru_stopped] += 1
+				stats(instance.name)[:lru_stopped] += 1
 				instance.stop
 			end
 
@@ -216,7 +221,7 @@ module CucumberSpawnProcess
 					if new_state == :starting
 						#puts "new instance running: #{instance.name}[#{key}]"
 						@pool.running(key)
-						stats("#{instance.name}[#{key}]")[:started] += 1
+						stats(instance.name)[:started] += 1
 					end
 					@pool.not_running(key) if [:not_running, :dead, :jammed].include? new_state
 				end
@@ -225,8 +230,8 @@ module CucumberSpawnProcess
 				@pool.running(key) if instance.running?
 
 				# init stats
-				stats("#{instance.name}[#{key}]")[:started] ||= 0
-				stats("#{instance.name}[#{key}]")[:lru_stopped] ||= 0
+				stats(instance.name)[:started] ||= 0
+				stats(instance.name)[:lru_stopped] ||= 0
 			end
 
 			# for storing shared data

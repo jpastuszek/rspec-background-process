@@ -13,9 +13,13 @@ end
 #require 'cucumber-spawn-process'
 #
 # Uncomment to change defaults
-#_process_pool(logging: false, max_running: 4)
-#
-# Uncomment to see LRU stats
+#_process_pool(
+#	logging: false,
+#	unique_by_name: true, # if false - reuse processes even if their definition name is different
+#	max_running: 4
+#)
+
+# Uncomment to see pool stats
 #at_exit do
 #	_process_pool.report_stats
 #end
