@@ -289,8 +289,12 @@ module CucumberSpawnProcess
 			puts
 			puts "Process pool stats (max running: #{@max_running}):"
 			@stats.each do |key, stats|
-				puts "#{key}: #{stats.map{|k, v| "#{k}: #{v}"}.join(' ')}"
+				puts "  #{key}: #{stats.map{|k, v| "#{k}: #{v}"}.join(' ')}"
 			end
+			puts "Total instances: #{@stats.length}"
+			puts "Total starts: #{@stats.reduce(0){|total, stat| total += stat.last[:started]}}"
+			puts "Total LRU stops: #{@stats.reduce(0){|total, stat| total += stat.last[:lru_stopped]}}"
+			puts "Total extra LRU stops: #{@stats.reduce(0){|total, stat| extra = (stat.last[:lru_stopped] - 1); total += extra if extra > 0; total}}"
 		end
 
 		def failed_instance
