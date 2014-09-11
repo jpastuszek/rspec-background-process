@@ -48,7 +48,7 @@ module CucumberSpawnProcess
 			when Array
 				working_directory = Dir.mktmpdir(working_directory)
 			when nil
-				working_directory = Dir.mktmpdir(name)
+				working_directory = Dir.mktmpdir(name.to_s)
 			end
 
 			@working_directory = Pathname.new(working_directory.to_s)
@@ -141,7 +141,7 @@ module CucumberSpawnProcess
 			}
 		end
 
-		def render_command
+		def command
 			# update arguments with actual port numbers, working directories etc. (see template variables)
 			Shellwords.join([@exec, *@args.map{|arg| render(arg)}])
 		end
@@ -215,7 +215,7 @@ module CucumberSpawnProcess
 			return self if trigger? :stopped
 			trigger? :starting or fail "can't start when: #{state}"
 
-			@command ||= render_command
+			@command ||= command
 			trigger :starting
 			@pid, @process = spawn
 
@@ -328,7 +328,7 @@ module CucumberSpawnProcess
 		def spawn
 			Daemon.daemonize(@pid_file, @log_file) do |log|
 				prepare_process(log, 'exec')
-				exec(@command)
+				Kernel.exec(@command)
 			end
 		end
 

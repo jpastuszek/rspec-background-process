@@ -8,20 +8,18 @@ require 'delegate'
 module CucumberSpawnProcess
 	class ProcessPool
 		class ProcessDefinition
-			def initialize(pool, name, path, type, options)
+			def initialize(pool, group, path, type, options)
 				@pool = pool
-				@name = name
+				@group = group
 				@path = path
 				@type = type
-
-				@unique_by_name = options.member?(:unique_by_name) ? options[:unique_by_name] : true
 
 				@extensions = Set.new
 				@options = {
 					ready_timeout: 10,
 					term_timeout: 10,
 					kill_timeout: 10,
-					ready_test: ->(p){fail "no readiness check defined for #{p.name}"},
+					ready_test: ->(p){fail 'no readiness check defined'},
 					refresh_action: ->(p){p.restart},
 					logging: false
 				}.merge(options)
@@ -29,13 +27,20 @@ module CucumberSpawnProcess
 				@arguments = []
 			end
 
-			attr_accessor :name
+			attr_accessor :group
+			attr_reader :path
 
 			def initialize_copy(old)
 				# need own copy
 				@extensions = @extensions.dup
 				@options = @options.dup
 				@arguments = @arguments.dup
+			end
+
+			def with(&block)
+				process = dup
+				process.instance_eval &block
+				process
 			end
 
 			def extend(mod, options)
@@ -47,12 +52,24 @@ module CucumberSpawnProcess
 				@options.merge! hash
 			end
 
+			def option(key, value)
+				@options[key] = value
+			end
+
+			def logging_enabled
+				@options[:logging] = true
+			end
+
 			def working_directory(dir)
 				@working_directory = dir
 			end
 
 			def arguments
 				@arguments
+			end
+
+			def argument(*value)
+				@arguments += value
 			end
 
 			def instance
@@ -74,11 +91,11 @@ module CucumberSpawnProcess
 				end
 
 				# can only use parts of the key for instance name
-				name = @unique_by_name ? @name : Pathname.new(@path).basename
+				name = Pathname.new(@path).basename
 
 				# need to crate new one
 				instance = @type.new(
-					"#{name}-#{_key}",
+					"#{@group}-#{name}-#{_key}",
 					@path,
 					@arguments,
 					@working_directory || [name, _key],
@@ -93,10 +110,15 @@ module CucumberSpawnProcess
 				@pool[_key] = instance
 			end
 
+			# shortcut
+			def start
+				instance.start
+			end
+
 			def key
 				hash = Digest::SHA256.new
-				hash.update @name if @unique_by_name
-				hash.update @path
+				hash.update @group.to_s
+				hash.update @path.to_s
 				hash.update @type.name
 				@extensions.each do |mod|
 					hash.update mod.name
@@ -257,6 +279,10 @@ module CucumberSpawnProcess
 			)
 		end
 
+		attr_reader :pool
+		attr_reader :options
+
+		# TODO: move out/remove; this is Cucumber specific
 		def define(name, path, type)
 			@definitions.member? name and fail "redefining background process '#{name}' is not allowed"
 			@definitions[name] = ProcessDefinition.new(@pool, name, path, type, @options)

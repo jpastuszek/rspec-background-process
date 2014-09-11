@@ -8,5 +8,9 @@ require 'cucumber-spawn-process'
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
 RSpec.configure do |config|
-  
+	config.include SpawnProcessHelpers
+
+	config.before :all do
+		process_pool(logging: true)
+	end
 end
