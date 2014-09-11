@@ -257,7 +257,7 @@ module CucumberSpawnProcess
 			end
 
 			trigger :stopped
-			nil
+			self
 		end
 
 		def verify

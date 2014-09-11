@@ -1,11 +1,12 @@
 require_relative 'spec_helper'
 
-describe 'instance control' do
-	subject do
-		background_process('features/support/test_process').instance
+describe 'instance control', subject: :shared_instance do
+	it '#start should spawn the process' do
+		expect(subject.start).to be_running
 	end
 
-	it '#start should spawn the executable' do
-		expect(subject.start).to be_running
+	it '#stop should stop the process' do
+		subject.start
+		expect(subject.stop).not_to be_running
 	end
 end
