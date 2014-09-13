@@ -60,6 +60,10 @@ module CucumberSpawnProcess
 				@options[:logging] = true
 			end
 
+			def logging_enabled?
+				@options[:logging]
+			end
+
 			def working_directory(dir)
 				@working_directory = dir
 			end
@@ -297,6 +301,10 @@ module CucumberSpawnProcess
 
 		def [](name)
 			@definitions[name] or fail "process #{name} not defined"
+		end
+
+		def logging_enabled?
+			@options[:logging]
 		end
 
 		def reset_definitions

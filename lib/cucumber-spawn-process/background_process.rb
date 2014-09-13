@@ -241,12 +241,14 @@ module CucumberSpawnProcess
 						puts "terminating process: #{@pid}"
 						Process.kill("TERM", @pid)
 						@process.join(@term_timeout) and throw :done
+						puts "process #{@pid} did not terminate in time"
 					end
 
 					if @kill_timeout > 0
 						puts "killing process: #{@pid}"
 						Process.kill("KILL", @pid)
 						@process.join(@kill_timeout) and throw :done
+						puts "process #{@pid} could not be killed!!!"
 					end
 				rescue Errno::ESRCH
 					throw :done
@@ -328,6 +330,7 @@ module CucumberSpawnProcess
 		def spawn
 			Daemon.daemonize(@pid_file, @log_file) do |log|
 				prepare_process(log, 'exec')
+				# TODO: looks like exec is eating pending TERM (or other) signal and .start.stop may time out on TERM if signal was delivered before exec?
 				Kernel.exec(@command)
 			end
 		end

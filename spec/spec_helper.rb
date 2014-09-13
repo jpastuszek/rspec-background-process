@@ -9,43 +9,29 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
 require 'rspec/core/shared_context'
 
-module FreshProcess
+module Process
 	extend RSpec::Core::SharedContext
 
 	subject! do
-		background_process('features/support/test_process', group: "fresh[#{rand}]")
-	end
-
-	def instance
-		subject.instance
+		background_process('features/support/test_process', group: "fresh[#{rand}]", load: true)
 	end
 end
 
-module SharedProcess
+module Instance
 	extend RSpec::Core::SharedContext
 
-	subject do
-		background_process('features/support/test_process')
-	end
-
-	def instance
-		subject.instance
-	end
-end
-
-module SharedInstance
-	extend RSpec::Core::SharedContext
-
-	subject do
-		background_process('features/support/test_process').instance
+	subject! do
+		background_process('features/support/test_process', group: "fresh[#{rand}]", load: true).instance
 	end
 end
 
 RSpec.configure do |config|
 	config.include SpawnProcessHelpers
-	config.include FreshProcess, subject: :fresh_process
-	config.include SharedProcess, subject: :shared_process
-	config.include SharedInstance, subject: :shared_instance
+	config.include Process, subject: :process
+	config.include Instance, subject: :instance
+
+	config.alias_example_group_to :feature
+	config.alias_example_to :scenario
 
 	config.before :all do
 		#process_pool(logging: true)
