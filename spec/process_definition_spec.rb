@@ -3,14 +3,12 @@ require_relative 'spec_helper'
 describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process do
 	describe '#with' do
 		it 'should execute passed block it in context of cloned process definition' do
-			ctx = nil
-
-			subject.with do
-				ctx = self
-			end
-
-			expect(ctx).to be_a CucumberSpawnProcess::ProcessPool::ProcessDefinition
-			expect(ctx).not_to eq(subject)
+			expect { |b|
+				subject.with(&b)
+			}.to yield_with_args(
+				an_instance_of(CucumberSpawnProcess::ProcessPool::ProcessDefinition)
+				.and satisfy{|actual| actual != subject} # no negation available for composites? (yet?)
+			)
 		end
 
 		example 'defining process variation' do
@@ -37,21 +35,60 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 		end
 	end
 
+	describe '#instance' do
+		it 'should create new process instance' do
+			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			.and_call_original
+
+			subject.instance
+		end
+
+		it 'should not crate new process when called more than once' do
+			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			.once
+			.and_call_original
+
+			subject.instance
+			subject.instance
+		end
+	end
+
 	describe '#argument' do
-		it 'should pass given argument to command' do
+		it 'should pass given argument to process' do
+			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			.with(anything, anything, a_collection_containing_exactly('foo bar', 'baz'), anything, anything)
+			.and_call_original
+
 			subject.argument 'foo bar'
 			subject.argument 'baz'
 
-			expect(subject.instance.command).to include 'foo\\ bar'
-			expect(subject.instance.command).to include 'baz'
+			subject.instance
 		end
 
-		it 'should pass given option argument to command' do
+		it 'should pass given option argument to process' do
+			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			.with(anything, anything, a_collection_containing_exactly('--foo', 'bar', '--baz', 'hello world'), anything, anything)
+			.and_call_original
+
 			subject.argument '--foo', 'bar'
 			subject.argument '--baz', 'hello world'
 
-			expect(subject.instance.command).to include '--foo bar'
-			expect(subject.instance.command).to include '--baz hello\\ world'
+			subject.instance
+		end
+	end
+
+	describe '#ready_test' do
+		it 'should register a block to be called when process is verified' do
+			expect { |b|
+				subject.ready_test do |*args|
+					b.to_proc.call(*args)
+					# need to return true
+					true
+				end
+
+				#TODO: only test if the block was passed to the instance
+				subject.instance.start.verify
+			}.to yield_control
 		end
 	end
 

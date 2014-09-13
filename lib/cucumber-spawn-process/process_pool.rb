@@ -48,20 +48,16 @@ module CucumberSpawnProcess
 				@options.merge! options
 			end
 
-			def options(hash)
-				@options.merge! hash
-			end
-
-			def option(key, value)
-				@options[key] = value
-			end
-
 			def logging_enabled
 				@options[:logging] = true
 			end
 
 			def logging_enabled?
 				@options[:logging]
+			end
+
+			def ready_test(&block)
+				@options[:ready_test] = block
 			end
 
 			def working_directory(dir)

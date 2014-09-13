@@ -63,4 +63,17 @@ describe CucumberSpawnProcess::BackgroundProcess, subject: :instance do
 			end
 		end
 	end
+
+	describe 'readiness', subject: :process do
+		it 'instance #verify should call readiness block with self as argument' do
+			expect { |b|
+				subject.ready_test do |*args|
+					b.to_proc.call(*args)
+					# need to return true
+					true
+				end
+				subject.instance.start.verify
+			}.to yield_with_args(CucumberSpawnProcess::BackgroundProcess)
+		end
+	end
 end
