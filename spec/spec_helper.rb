@@ -25,6 +25,8 @@ module Instance
 	end
 end
 
+RSpec::Matchers.define_negated_matcher :different_than, :be
+
 RSpec.configure do |config|
 	config.include SpawnProcessHelpers
 	config.include Process, subject: :process

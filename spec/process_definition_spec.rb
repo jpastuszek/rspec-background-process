@@ -7,7 +7,7 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 				subject.with(&b)
 			}.to yield_with_args(
 				an_instance_of(CucumberSpawnProcess::ProcessPool::ProcessDefinition)
-				.and satisfy{|actual| actual != subject} # no negation available for composites? (yet?)
+				.and different_than subject
 			)
 		end
 
