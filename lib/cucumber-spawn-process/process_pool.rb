@@ -229,7 +229,6 @@ module CucumberSpawnProcess
 		end
 
 		def initialize(options)
-			reset_definitions
 			@stats = {}
 
 			@max_running = options.delete(:max_running) || 4
@@ -286,29 +285,8 @@ module CucumberSpawnProcess
 		attr_reader :pool
 		attr_reader :options
 
-		# TODO: move out/remove; this is Cucumber specific
-		def define(name, path, type)
-			@definitions.member? name and fail "redefining background process '#{name}' is not allowed"
-			@definitions[name] = ProcessDefinition.new(@pool, name, path, type, @options)
-		end
-
-		def clone(name, process)
-			@definitions.member? name and fail "redefining background process '#{name}' is not allowed (clone)"
-			new = process.dup
-			new.name = name
-			@definitions[name] = new
-		end
-
-		def [](name)
-			@definitions[name] or fail "process #{name} not defined"
-		end
-
 		def logging_enabled?
 			@options[:logging]
-		end
-
-		def reset_definitions
-			@definitions = {}
 		end
 
 		def reset_active
