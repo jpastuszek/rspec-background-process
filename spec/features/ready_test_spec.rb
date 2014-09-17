@@ -9,8 +9,8 @@ feature 'background process readiness verification' do
 		end
 
 		scenario 'starting a background process with readiness check based on log file contents' do
-			process = subject.with do
-				ready_when_log_includes 'started'
+			process = subject.with do |process|
+				process.ready_when_log_includes 'started'
 			end
 
 			instance = process.instance
@@ -23,8 +23,8 @@ feature 'background process readiness verification' do
 
 	context 'with URL based check', subject: :http_process do
 		scenario 'starting a background process with readiness check based on HTTP request' do
-			process = subject.with do
-				ready_when_url_response_status 'http://localhost:1234/health_check', 'OK'
+			process = subject.with do |process|
+				process.ready_when_url_response_status 'http://localhost:1234/health_check', 'OK'
 			end
 
 			instance = process.instance

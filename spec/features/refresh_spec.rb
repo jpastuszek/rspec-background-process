@@ -13,11 +13,13 @@ feature 'refreshing pooled processes state', subject: :process do
 		Pathname.new('/tmp/processtest1')
 	end
 
-	scenario 'by custom command' do
-		command = "touch #{test_marker}" # for scoping
+	before do
+		test_marker.exist? and test_marker.unlink
+	end
 
-		instance = subject.with do
-			refresh_command command
+	scenario 'by custom command' do
+		instance = subject.with do |process|
+			process.refresh_command "touch #{test_marker}"
 		end.start
 
 		expect(test_marker).not_to exist

@@ -37,9 +37,9 @@ module CucumberSpawnProcess
 				@arguments = @arguments.dup
 			end
 
-			def with(&block)
+			def with
 				process = dup
-				process.instance_eval &block
+				yield process
 				process
 			end
 

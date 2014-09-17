@@ -12,13 +12,13 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 		end
 
 		example 'defining process variation' do
-			hello_process = background_process('features/support/test_process').with do
-				argument 'hello'
-				logging_enabled
+			hello_process = background_process('features/support/test_process').with do |process|
+				process.argument 'hello'
+				process.logging_enabled
 			end
 
-			hello_foo_bar_process = hello_process.with do
-				argument 'foo-bar'
+			hello_foo_bar_process = hello_process.with do |process|
+				process.argument 'foo-bar'
 			end
 
 			expect {
