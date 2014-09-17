@@ -85,42 +85,38 @@ Given /^(#{PROCESS}) kill timeout is (.*) seconds?$/ do |process, seconds|
 end
 
 Given /^(#{PROCESS}) is ready when log file contains (.*)/ do |process, log_line|
-	process.options(
-		ready_test: ->(instance) do
-			log_line = instance.render(log_line)
+	process.ready_test do |instance|
+		log_line = instance.render(log_line)
 
-			# NOTE: log file my not be crated just after process is started (spawned) so we need to retry
-			with_retries(
-				max_tries: 10000,
-				base_sleep_seconds: 0.01,
-				max_sleep_seconds: 0.2,
-				rescue: Errno::ENOENT
-			) do
-				File::Tail::Logfile.tail(instance.log_file, forward: 0, interval: 0.01, max_interval: 1, suspicious_interval: 4) do |line|
-					line.include?(log_line) and break true
-				end
+		# NOTE: log file my not be crated just after process is started (spawned) so we need to retry
+		with_retries(
+			max_tries: 10000,
+			base_sleep_seconds: 0.01,
+			max_sleep_seconds: 0.2,
+			rescue: Errno::ENOENT
+		) do
+			File::Tail::Logfile.tail(instance.log_file, forward: 0, interval: 0.01, max_interval: 1, suspicious_interval: 4) do |line|
+				line.include?(log_line) and break true
 			end
 		end
-	)
+	end
 end
 
 Given /^(#{PROCESS}) is ready when URI (.*) response status is (.*)/ do |process, uri, status|
-	process.options(
-		ready_test: ->(instance) do
-			_uri = instance.render(uri) # NOTE: new variable (_uri) is needed or strange things happen...
+	process.ready_test do |instance|
+		_uri = instance.render(uri) # NOTE: new variable (_uri) is needed or strange things happen...
 
-			begin
-				with_retries(
-					max_tries: 10000,
-					base_sleep_seconds: 0.06,
-					max_sleep_seconds: 0.2,
-					rescue: Errno::ECONNREFUSED
-				) do
-					open(_uri).status.last.strip == status and break true
-				end
+		begin
+			with_retries(
+				max_tries: 10000,
+				base_sleep_seconds: 0.06,
+				max_sleep_seconds: 0.2,
+				rescue: Errno::ECONNREFUSED
+			) do
+				open(_uri).status.last.strip == status and break true
 			end
 		end
-	)
+	end
 end
 
 Given /^(#{PROCESS}) is refreshed with command (.*)/ do |process, command|

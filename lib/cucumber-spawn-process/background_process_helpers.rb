@@ -7,7 +7,7 @@ module SpawnProcessHelpers
 		@@process_pool ||= CucumberSpawnProcess::ProcessPool.new(options)
 	end
 
-	def background_process(path, options = {}, &block)
+	def background_process(path, options = {})
 		CucumberSpawnProcess::ProcessPool::ProcessDefinition.new(
 			process_pool.pool,
 			options[:group] || 'default',

@@ -60,6 +60,10 @@ module CucumberSpawnProcess
 				@options[:ready_test] = block
 			end
 
+			def refresh_action(&block)
+				@options[:refresh_action] = block
+			end
+
 			def working_directory(dir)
 				@working_directory = dir
 			end
