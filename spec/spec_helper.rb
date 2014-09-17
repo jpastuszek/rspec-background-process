@@ -25,12 +25,21 @@ module Instance
 	end
 end
 
+module HTTPProcess
+	extend RSpec::Core::SharedContext
+
+	subject! do
+		background_process('features/support/test_http_server', group: "http_fresh[#{rand}]", load: true)
+	end
+end
+
 RSpec::Matchers.define_negated_matcher :different_than, :be
 
 RSpec.configure do |config|
 	config.include SpawnProcessHelpers
 	config.include Process, subject: :process
 	config.include Instance, subject: :instance
+	config.include HTTPProcess, subject: :http_process
 
 	config.alias_example_group_to :feature
 	config.alias_example_to :scenario
