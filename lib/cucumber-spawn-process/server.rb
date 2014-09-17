@@ -1,4 +1,12 @@
 module CucumberSpawnProcess
+	class ProcessPool
+		class ProcessDefinition
+			def http_port_allocated_form(base_port, port_count = 1)
+				extend CucumberSpawnProcess::BackgroundProcess::Server, port_count: 1, base_port: 1200
+			end
+		end
+	end
+
 	class BackgroundProcess
 		module Server
 			def self.extended(mod)
