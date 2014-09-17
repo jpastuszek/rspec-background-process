@@ -87,7 +87,7 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 				end
 
 				#TODO: only test if the block was passed to the instance
-				subject.instance.start.verify
+				subject.instance.start.wait_ready
 			}.to yield_control
 		end
 	end

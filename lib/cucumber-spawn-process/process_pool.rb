@@ -318,5 +318,20 @@ module CucumberSpawnProcess
 				instance.state_change_time
 			end.last
 		end
+
+		def report_failed_instance
+			if failed_instance
+				puts "Last failed process instance state log: "
+				failed_instance.state_log.each do |log_line|
+					puts "\t#{log_line}"
+				end
+				puts "Working directory: #{failed_instance.working_directory}"
+				puts "Log file: #{failed_instance.log_file}"
+				puts "State: #{failed_instance.state}"
+				puts "Exit code: #{failed_instance.exit_code}"
+			else
+				puts "No instance in failed state"
+			end
+		end
 	end
 end

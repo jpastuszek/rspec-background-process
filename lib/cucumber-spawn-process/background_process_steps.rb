@@ -190,11 +190,11 @@ When /^(#{INSTANCE}) is stopped$/ do |instance|
 end
 
 Given /^(#{INSTANCE}) is ready$/ do |instance|
-	instance.ready? or instance.verify
+	instance.ready? or instance.wait_ready
 end
 
 Given /^(#{INSTANCE}) is verified$/ do |instance|
-	instance.verify
+	instance.wait_ready
 end
 
 Given /^(#{PROCESS}) instance is running and ready$/ do |process|

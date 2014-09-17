@@ -262,7 +262,7 @@ module CucumberSpawnProcess
 			self
 		end
 
-		def verify
+		def wait_ready
 			trigger? :verified or fail "can't verify when: #{state}"
 
 			puts 'verifying'

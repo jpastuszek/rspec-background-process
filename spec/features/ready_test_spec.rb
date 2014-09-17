@@ -4,7 +4,7 @@ feature 'background process readiness verification' do
 	context 'with log file based check', subject: :process do
 		scenario 'raise exception when no readiness check was defined for process instance' do
 			expect {
-				subject.start.verify
+				subject.start.wait_ready
 			}.to raise_error RuntimeError, 'no readiness check defined'
 		end
 
@@ -14,7 +14,7 @@ feature 'background process readiness verification' do
 			end
 
 			instance = process.instance
-			instance.start.verify
+			instance.start.wait_ready
 
 			expect(instance).to be_running
 			expect(instance).to be_ready
@@ -28,7 +28,7 @@ feature 'background process readiness verification' do
 			end
 
 			instance = process.instance
-			instance.start.verify
+			instance.start.wait_ready
 
 			expect(instance).to be_running
 			expect(instance).to be_ready
