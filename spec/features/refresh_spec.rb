@@ -9,24 +9,36 @@ feature 'refreshing pooled processes state', subject: :process do
 		expect(instance.pid).not_to eq pid
 	end
 
-	let! :test_marker do
-		Pathname.new('/tmp/processtest1')
-	end
+	context 'with custom command' do
+		let! :test_marker do
+			Pathname.new('/tmp/processtest1')
+		end
 
-	before do
-		test_marker.exist? and test_marker.unlink
-	end
+		before do
+			test_marker.exist? and test_marker.unlink
+		end
 
-	scenario 'by custom command' do
-		instance = subject.with do |process|
-			process.refresh_command "touch #{test_marker}"
-		end.start
+		scenario 'refresh executes custom command' do
+			instance = subject.with do |process|
+				process.refresh_command "touch #{test_marker}"
+			end.start
 
-		expect(test_marker).not_to exist
+			expect(test_marker).not_to exist
 
-		instance.refresh
+			instance.refresh
 
-		expect(test_marker).to exist
+			expect(test_marker).to exist
+		end
+
+		scenario 'refresh execute command in current working directory of the process' do
+			instance = subject.with do |process|
+				process.refresh_command "pwd > /tmp/pwd"
+			end.start
+
+			instance.refresh
+
+			expect(Pathname.new(Pathname.new('/tmp/pwd').read.strip).realpath.to_s).to eq instance.working_directory.realpath.to_s
+		end
 	end
 end
 

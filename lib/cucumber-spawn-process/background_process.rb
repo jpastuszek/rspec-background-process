@@ -55,7 +55,7 @@ module CucumberSpawnProcess
 			@working_directory.directory? or @working_directory.mkdir
 
 			@pid_file = @working_directory + "#{@name}.pid"
-			@log_file = @working_directory + "#{@name}.log"
+			@log_file = @working_directory + "out.log"
 
 			@options = options
 			reset_options(options)
@@ -201,7 +201,13 @@ module CucumberSpawnProcess
 
 		def refresh
 			puts 'refreshing'
-			@refresh_action.call(self)
+			cwd = Dir.pwd
+			begin
+				Dir.chdir(@working_directory.to_s)
+				@refresh_action.call(self)
+			ensure
+				Dir.chdir(cwd)
+			end
 			self
 		end
 
