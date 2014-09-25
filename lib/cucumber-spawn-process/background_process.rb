@@ -136,6 +136,7 @@ module CucumberSpawnProcess
 			{
 				/working directory/ => -> { working_directory },
 				/pid file/ => -> { pid_file },
+				/pid/ => -> { pid },
 				/log file/ => -> { log_file },
 				/name/ => -> { name },
 			}
