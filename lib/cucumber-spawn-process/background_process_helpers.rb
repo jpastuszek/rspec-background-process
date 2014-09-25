@@ -20,7 +20,10 @@ module SpawnProcessHelpers
 	end
 
 	def self.report_failed_instance
-		@@process_pool.report_failed_instance if defined? @@process_pool
+		return unless defined? @@process_pool
+
+		@@process_pool.report_failed_instance
+		@@process_pool.report_logs
 	end
 end
 
