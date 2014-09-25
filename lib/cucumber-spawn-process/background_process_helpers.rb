@@ -1,3 +1,5 @@
+require 'rspec'
+require 'rspec/core/formatters'
 require_relative 'background_process'
 require_relative 'process_pool'
 
@@ -18,7 +20,7 @@ module SpawnProcessHelpers
 	end
 
 	def self.report_failed_instance
-		@@process_pool.report_failed_instance if @@process_pool
+		@@process_pool.report_failed_instance if defined? @@process_pool
 	end
 end
 
