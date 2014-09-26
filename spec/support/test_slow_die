@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+puts 'hi'
+
+sleep 0.5
+
+puts 'bye'

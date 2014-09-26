@@ -41,6 +41,14 @@ module DyingProcess
 	end
 end
 
+module SlowlyDyingProcess
+	extend RSpec::Core::SharedContext
+
+	subject! do
+		background_process('spec/support/test_slow_die', group: "slow_die[#{rand}]", load: true)
+	end
+end
+
 
 RSpec::Matchers.define_negated_matcher :different_than, :be
 
@@ -50,6 +58,7 @@ RSpec.configure do |config|
 	config.include Instance, subject: :instance
 	config.include HTTPProcess, subject: :http_process
 	config.include DyingProcess, subject: :dying_process
+	config.include SlowlyDyingProcess, subject: :slowly_dying_process
 
 	config.alias_example_group_to :feature
 	config.alias_example_to :scenario

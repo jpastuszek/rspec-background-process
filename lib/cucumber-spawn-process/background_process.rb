@@ -33,8 +33,8 @@ module CucumberSpawnProcess
 		end
 
 		class StateError < RuntimeError
-			def initialize(action, state)
-				super "can't #{action} when: #{state}"
+			def initialize(process, action, state)
+				super "process #{process} can't #{action} when in state: #{state}"
 			end
 		end
 
@@ -226,7 +226,7 @@ module CucumberSpawnProcess
 
 		def start
 			return self if trigger? :stopped
-			trigger? :starting or raise StateError.new('start', state)
+			trigger? :starting or raise StateError.new(self, 'start', state)
 
 			@command ||= command
 			trigger :starting
@@ -243,7 +243,7 @@ module CucumberSpawnProcess
 
 		def stop
 			return if trigger? :started
-			trigger? :stopped or raise StateError.new('stop', state)
+			trigger? :stopped or raise StateError.new(self, 'stop', state)
 
 			# get rid of the watcher thread
 			@process_watcher and @process_watcher.kill and @process_watcher.join
@@ -268,7 +268,7 @@ module CucumberSpawnProcess
 				end
 
 				trigger :run_away
-				raise ProcessRunAwayError.new(self.to_s, @pid)
+				raise ProcessRunAwayError.new(self, @pid)
 			end
 
 			trigger :stopped
@@ -276,7 +276,7 @@ module CucumberSpawnProcess
 		end
 
 		def wait_ready
-			trigger? :verified or raise StateError.new('wait ready', state)
+			trigger? :verified or raise StateError.new(self, 'wait ready', state)
 
 			puts 'waiting ready'
 
@@ -295,12 +295,12 @@ module CucumberSpawnProcess
 				puts "process failed to pass it's readiness test"
 				stop
 				trigger :failed
-				raise ProcessReadyFailedError.new(self.to_s)
+				raise ProcessReadyFailedError.new(self)
 			when :ready_timeout
 				puts "process not ready in time; see #{log_file} for detail"
 				stop
 				trigger :failed
-				raise ProcessReadyTimeOutError.new(self.to_s)
+				raise ProcessReadyTimeOutError.new(self)
 			when Exception
 				puts "process readiness check raised error: #{status}; see #{log_file} for detail"
 				stop
@@ -362,7 +362,7 @@ module CucumberSpawnProcess
 			when Process::Status
 				puts "process exited; see #{log_file} for detail"
 				trigger :died
-				raise ProcessExitedError.new(self.to_s, exit_code)
+				raise ProcessExitedError.new(self, exit_code)
 			end
 
 			value
