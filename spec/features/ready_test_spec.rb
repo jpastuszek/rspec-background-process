@@ -14,10 +14,15 @@ feature 'background process readiness verification' do
 			end
 
 			instance = process.instance
-			instance.start.wait_ready
+			instance.start
 
 			expect(instance).to be_running
+			expect(instance.log_file.read).not_to include 'started'
+
+			instance.wait_ready
+
 			expect(instance).to be_ready
+			expect(instance.log_file.read).to include 'started'
 		end
 	end
 
@@ -28,10 +33,15 @@ feature 'background process readiness verification' do
 			end
 
 			instance = process.instance
-			instance.start.wait_ready
+			instance.start
 
 			expect(instance).to be_running
+			expect(instance.log_file.read).not_to include 'got health_check request'
+
+			instance.wait_ready
+
 			expect(instance).to be_ready
+			expect(instance.log_file.read).to include 'got health_check request'
 		end
 	end
 end

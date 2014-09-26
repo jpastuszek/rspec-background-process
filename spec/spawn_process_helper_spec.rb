@@ -3,10 +3,11 @@ require_relative 'spec_helper'
 describe SpawnProcessHelpers do
 	describe '#process_pool' do
 		it 'should provide singleton pool object ' do
-			p1 = process_pool
-			p2 = process_pool
-
-			expect(p1).to eq(p2)
+			expect {
+				process_pool
+			}.not_to change {
+				process_pool
+			}
 		end
 	end
 

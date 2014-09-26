@@ -10,6 +10,7 @@ puts "listening on port: #{port}"
 server = WEBrick::HTTPServer.new(:Port => port)
 
 server.mount_proc '/health_check' do |req, res|
+	puts 'got health_check request'
 	res.body = "OK\n\r"
 end
 

@@ -2,7 +2,11 @@ require_relative 'spec_helper'
 
 describe CucumberSpawnProcess::BackgroundProcess, subject: :instance do
 	describe 'running' do
-		it '#start should spawn the process' do
+		it '#command should represent command to be executed' do
+			expect(subject.command).to include 'test_process'
+		end
+
+		it '#start should spawn the process with Kernel.fork' do
 			subject.start
 
 			pid = subject.pid
@@ -27,10 +31,12 @@ describe CucumberSpawnProcess::BackgroundProcess, subject: :instance do
 
 		it '#restart should stop and then start the process' do
 			subject.start
-			pid = subject.pid
 
-			subject.restart
-			expect(subject.pid).not_to eq(pid)
+			expect {
+				subject.restart
+			}.to change {
+				subject.pid
+			}
 		end
 
 		describe 'related predicates' do

@@ -3,10 +3,12 @@ require_relative '../spec_helper'
 feature 'refreshing pooled processes state', subject: :process do
 	scenario 'by default processes are restarted on refresh' do
 		instance = subject.start
-		pid = instance.pid
 
-		instance.refresh
-		expect(instance.pid).not_to eq pid
+		expect {
+			instance.refresh
+		}.to change {
+			instance.pid
+		}
 	end
 
 	context 'with custom command' do

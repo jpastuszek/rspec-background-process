@@ -13,7 +13,7 @@ module Process
 	extend RSpec::Core::SharedContext
 
 	subject! do
-		background_process('features/support/test_process', group: "fresh[#{rand}]", load: true)
+		background_process('spec/support/test_process', group: "fresh[#{rand}]", load: true)
 	end
 end
 
@@ -21,7 +21,7 @@ module Instance
 	extend RSpec::Core::SharedContext
 
 	subject! do
-		background_process('features/support/test_process', group: "fresh[#{rand}]", load: true).instance
+		background_process('spec/support/test_process', group: "fresh[#{rand}]", load: true).instance
 	end
 end
 
@@ -29,7 +29,7 @@ module HTTPProcess
 	extend RSpec::Core::SharedContext
 
 	subject! do
-		background_process('features/support/test_http_server', group: "http_fresh[#{rand}]", load: true)
+		background_process('spec/support/test_http_server', group: "http_fresh[#{rand}]", load: true)
 	end
 end
 
