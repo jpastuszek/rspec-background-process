@@ -232,6 +232,8 @@ module CucumberSpawnProcess
 			trigger :starting
 			@pid, @process = spawn
 
+			fail "expected 2 values from #spawn, got: #{@pid}, #{@process}" unless @pid and @process
+
 			@process_watcher = Thread.new do
 				@process.join
 				trigger :died
