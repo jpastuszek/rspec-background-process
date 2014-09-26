@@ -33,6 +33,15 @@ module HTTPProcess
 	end
 end
 
+module DyingProcess
+	extend RSpec::Core::SharedContext
+
+	subject! do
+		background_process('spec/support/test_die', group: "die[#{rand}]", load: true)
+	end
+end
+
+
 RSpec::Matchers.define_negated_matcher :different_than, :be
 
 RSpec.configure do |config|
@@ -40,6 +49,7 @@ RSpec.configure do |config|
 	config.include Process, subject: :process
 	config.include Instance, subject: :instance
 	config.include HTTPProcess, subject: :http_process
+	config.include DyingProcess, subject: :dying_process
 
 	config.alias_example_group_to :feature
 	config.alias_example_to :scenario

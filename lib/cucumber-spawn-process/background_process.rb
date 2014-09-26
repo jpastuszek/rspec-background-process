@@ -32,6 +32,12 @@ module CucumberSpawnProcess
 			end
 		end
 
+		class StateError < RuntimeError
+			def initialize(action, state)
+				super "can't #{action} when: #{state}"
+			end
+		end
+
 		def initialize(name, cmd, args = [], working_directory = nil, options = {})
 			@name = name
 
@@ -220,7 +226,7 @@ module CucumberSpawnProcess
 
 		def start
 			return self if trigger? :stopped
-			trigger? :starting or fail "can't start when: #{state}"
+			trigger? :starting or raise StateError.new('start', state)
 
 			@command ||= command
 			trigger :starting
@@ -237,7 +243,7 @@ module CucumberSpawnProcess
 
 		def stop
 			return if trigger? :started
-			trigger? :stopped or fail "can't stop while: #{state}"
+			trigger? :stopped or raise StateError.new('stop', state)
 
 			# get rid of the watcher thread
 			@process_watcher and @process_watcher.kill and @process_watcher.join
@@ -270,9 +276,9 @@ module CucumberSpawnProcess
 		end
 
 		def wait_ready
-			trigger? :verified or fail "can't verify when: #{state}"
+			trigger? :verified or raise StateError.new('wait ready', state)
 
-			puts 'verifying'
+			puts 'waiting ready'
 
 			status = while_running do
 				begin
