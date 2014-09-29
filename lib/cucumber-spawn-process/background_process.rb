@@ -43,7 +43,6 @@ module CucumberSpawnProcess
 
 			@exec = (Pathname.new(Dir.pwd) + cmd).cleanpath.to_s
 			@args = args.map(&:to_s)
-			@command = nil # built on startup
 
 			@pid = nil
 			@process = nil
@@ -84,7 +83,7 @@ module CucumberSpawnProcess
 			)
 
 			@_fsm.on(:starting) do
-				puts "starting: `#{@command}`"
+				puts "starting: `#{command}`"
 				puts "working directory: #{@working_directory}"
 				puts "log file: #{@log_file}"
 			end
@@ -142,7 +141,6 @@ module CucumberSpawnProcess
 			{
 				/working directory/ => -> { working_directory },
 				/pid file/ => -> { pid_file },
-				/pid/ => -> { pid },
 				/log file/ => -> { log_file },
 				/name/ => -> { name },
 			}
@@ -175,7 +173,7 @@ module CucumberSpawnProcess
 		end
 
 		def pid
-			@pid if running?
+			@pid if starting? or running?
 		end
 
 		def exit_code
@@ -184,6 +182,10 @@ module CucumberSpawnProcess
 
 		def running?
 			trigger? :stopped # if it can be stopped it must be running :D
+		end
+
+		def starting?
+			state == :starting
 		end
 
 		def ready?
@@ -228,7 +230,6 @@ module CucumberSpawnProcess
 			return self if trigger? :stopped
 			trigger? :starting or raise StateError.new(self, 'start', state)
 
-			@command ||= command
 			trigger :starting
 			@pid, @process = spawn
 
@@ -343,10 +344,9 @@ module CucumberSpawnProcess
 		end
 
 		def spawn
-			Daemon.daemonize(@pid_file, @log_file) do |log|
-				prepare_process(log, 'exec')
+			daemonize('exec') do |command|
 				# TODO: looks like exec is eating pending TERM (or other) signal and .start.stop may time out on TERM if signal was delivered before exec?
-				Kernel.exec(@command)
+				Kernel.exec(command)
 			end
 		end
 
@@ -370,12 +370,17 @@ module CucumberSpawnProcess
 			value
 		end
 
-		def prepare_process(log, type)
-			log.truncate(0)
-			Dir.chdir(@working_directory.to_s)
+		def daemonize(type = 'exec')
+			Daemon.daemonize(@pid_file, @log_file) do |log|
+				log.truncate(0)
+				Dir.chdir(@working_directory.to_s)
 
-			# useful for testing
-			ENV['PROCESS_SPAWN_TYPE'] = type
+				# useful for testing
+				ENV['PROCESS_SPAWN_TYPE'] = type
+
+				@pid = Process.pid
+				yield command
+			end
 		end
 	end
 
@@ -385,12 +390,10 @@ module CucumberSpawnProcess
 		# cmd will be loaded in forked ruby interpreter and arguments passed via ENV['ARGS']
 		# This way starting new process will be much faster since ruby VM is already loaded
 		def spawn
-			cmd = Shellwords.split(@command)
-			file = cmd.shift
-
-			puts "loading ruby script: #{file}"
-			Daemon.daemonize(@pid_file, @log_file) do |log|
-				prepare_process(log, 'load')
+			puts "loading ruby script: #{@exec}"
+			daemonize('load') do |command|
+				cmd = Shellwords.split(command)
+				file = cmd.shift
 
 				# reset ARGV
 				Object.instance_eval{ remove_const(:ARGV) }
