@@ -67,7 +67,6 @@ PLATFORMS
 DEPENDENCIES
   bundler (~> 1.0)
   daemon (~> 1.2)
-  faraday (>= 0.8)
   file-tail (~> 1.0)
   jeweler (~> 1.8.4)
   micromachine (~> 1.1)
