@@ -35,15 +35,15 @@ feature 'processes with same definition reuse single instance', subject: :proces
 
 	context 'extensions' do
 		scenario 'defining two instances with same extensions but different options' do
-			instance1 = subject.with{|p| p.extend CucumberSpawnProcess::BackgroundProcess::Server, port_count: 3, base_port: 1200}.instance
-			instance2 = subject.with{|p| p.extend CucumberSpawnProcess::BackgroundProcess::Server, port_count: 1, base_port: 1200}.instance
+			instance1 = subject.with{|p| p.extend RSpecBackgroundProcess::BackgroundProcess::Server, port_count: 3, base_port: 1200}.instance
+			instance2 = subject.with{|p| p.extend RSpecBackgroundProcess::BackgroundProcess::Server, port_count: 1, base_port: 1200}.instance
 
 			expect(instance1).to eq(instance2)
 		end
 
 		scenario 'defining two instances with different extensions' do
 			instance1 = subject.instance
-			instance2 = subject.with{|p| p.extend CucumberSpawnProcess::BackgroundProcess::Server, port_count: 1, base_port: 1200}.instance
+			instance2 = subject.with{|p| p.extend RSpecBackgroundProcess::BackgroundProcess::Server, port_count: 1, base_port: 1200}.instance
 
 			expect(instance1).not_to eq(instance2)
 		end

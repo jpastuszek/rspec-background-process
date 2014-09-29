@@ -6,7 +6,7 @@ require 'shellwords'
 require 'thwait'
 require 'micromachine'
 
-module CucumberSpawnProcess
+module RSpecBackgroundProcess
 	class BackgroundProcess
 		class ProcessExitedError < RuntimeError
 			def initialize(process, exit_code)

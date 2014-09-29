@@ -4,7 +4,7 @@ require 'retries'
 
 require_relative 'process_pool'
 
-module CucumberSpawnProcess
+module RSpecBackgroundProcess
 	class ProcessPool
 		class ProcessDefinition
 			def ready_when_log_includes(log_line)

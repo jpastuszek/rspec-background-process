@@ -1,6 +1,6 @@
 require_relative 'spec_helper'
 
-describe CucumberSpawnProcess::BackgroundProcess, subject: :instance do
+describe RSpecBackgroundProcess::BackgroundProcess, subject: :instance do
 	describe 'running' do
 		it '#command should represent command to be executed' do
 			expect(subject.command).to include 'test_process'
@@ -84,7 +84,7 @@ describe CucumberSpawnProcess::BackgroundProcess, subject: :instance do
 				expect(instance).to receive(:spawn).once.and_return([42, Thread.new{sleep 0.1}])
 				instance.start
 				instance.wait_ready
-			}.to yield_with_args(CucumberSpawnProcess::BackgroundProcess)
+			}.to yield_with_args(RSpecBackgroundProcess::BackgroundProcess)
 		end
 	end
 end

@@ -1,6 +1,6 @@
 require_relative 'process_pool'
 
-module CucumberSpawnProcess
+module RSpecBackgroundProcess
 	class ProcessPool
 		class ProcessDefinition
 			def refresh_command(command)

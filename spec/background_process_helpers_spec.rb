@@ -1,6 +1,6 @@
 require_relative 'spec_helper'
 
-describe SpawnProcessHelpers, with: :background_process do
+describe BackgroundProcessHelpers, with: :background_process do
 	describe '#process_pool' do
 		it 'should provide singleton pool object ' do
 			expect {
@@ -20,13 +20,13 @@ describe SpawnProcessHelpers, with: :background_process do
 		describe 'load option' do
 			it 'when set to true will change instance type to LoadedBackgroundProcess' do
 				process = background_process('features/support/test_process', load: true)
-				expect(process.instance).to be_a CucumberSpawnProcess::LoadedBackgroundProcess
+				expect(process.instance).to be_a RSpecBackgroundProcess::LoadedBackgroundProcess
 			end
 		end
 
 		it 'should return process definition' do
 			process = background_process('features/support/test_process')
-			expect(process).to be_a CucumberSpawnProcess::ProcessPool::ProcessDefinition
+			expect(process).to be_a RSpecBackgroundProcess::ProcessPool::ProcessDefinition
 		end
 	end
 end

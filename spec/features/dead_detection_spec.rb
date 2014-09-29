@@ -20,7 +20,7 @@ feature 'dead instance should not be usable any more', subject: :dying_process d
 
 		expect {
 			instance.start
-		}.to raise_error CucumberSpawnProcess::BackgroundProcess::StateError, /can't start when in state: dead/
+		}.to raise_error RSpecBackgroundProcess::BackgroundProcess::StateError, /can't start when in state: dead/
 	end
 
 	scenario 'trying to #stop or #restart dead instance' do
@@ -31,11 +31,11 @@ feature 'dead instance should not be usable any more', subject: :dying_process d
 
 		expect {
 			instance.stop
-		}.to raise_error CucumberSpawnProcess::BackgroundProcess::StateError, /can't stop when in state: dead/
+		}.to raise_error RSpecBackgroundProcess::BackgroundProcess::StateError, /can't stop when in state: dead/
 
 		expect {
 			instance.restart
-		}.to raise_error CucumberSpawnProcess::BackgroundProcess::StateError, /can't stop when in state: dead/
+		}.to raise_error RSpecBackgroundProcess::BackgroundProcess::StateError, /can't stop when in state: dead/
 	end
 
 	scenario 'trying to #wait_ready on dead instance' do
@@ -46,7 +46,7 @@ feature 'dead instance should not be usable any more', subject: :dying_process d
 
 		expect {
 			instance.wait_ready
-		}.to raise_error CucumberSpawnProcess::BackgroundProcess::StateError, /can't wait ready when in state: dead/
+		}.to raise_error RSpecBackgroundProcess::BackgroundProcess::StateError, /can't wait ready when in state: dead/
 	end
 end
 
@@ -59,7 +59,7 @@ feature 'detecting instance death wile waiting for it to become ready', subject:
 
 			expect {
 				instance.wait_ready
-			}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessExitedError, /exited with exit code: 0/
+			}.to raise_error RSpecBackgroundProcess::BackgroundProcess::ProcessExitedError, /exited with exit code: 0/
 
 			expect(instance).to be_dead
 		end
@@ -73,7 +73,7 @@ feature 'detecting instance death wile waiting for it to become ready', subject:
 
 			expect {
 				instance.wait_ready
-			}.to raise_error CucumberSpawnProcess::BackgroundProcess::ProcessExitedError, /exited with exit code: 0/
+			}.to raise_error RSpecBackgroundProcess::BackgroundProcess::ProcessExitedError, /exited with exit code: 0/
 
 			expect(instance).to be_dead
 		end

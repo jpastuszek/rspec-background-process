@@ -5,7 +5,7 @@ require 'rufus-lru'
 require 'set'
 require 'delegate'
 
-module CucumberSpawnProcess
+module RSpecBackgroundProcess
 	class ProcessPool
 		class ProcessDefinition
 			def initialize(pool, group, path, type, options)

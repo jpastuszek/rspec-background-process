@@ -1,8 +1,8 @@
-module CucumberSpawnProcess
+module RSpecBackgroundProcess
 	class ProcessPool
 		class ProcessDefinition
 			def http_port_allocated_form(base_port, port_count = 1)
-				extend CucumberSpawnProcess::BackgroundProcess::Server, base_port: base_port, port_count: port_count
+				extend RSpecBackgroundProcess::BackgroundProcess::Server, base_port: base_port, port_count: port_count
 			end
 		end
 	end

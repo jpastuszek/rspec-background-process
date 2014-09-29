@@ -1,12 +1,12 @@
 require_relative 'spec_helper'
 
-describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process do
+describe RSpecBackgroundProcess::ProcessPool::ProcessDefinition, subject: :process do
 	describe '#with' do
 		it 'should execute passed block it in context of cloned process definition' do
 			expect { |b|
 				subject.with(&b)
 			}.to yield_with_args(
-				an_instance_of(CucumberSpawnProcess::ProcessPool::ProcessDefinition)
+				an_instance_of(RSpecBackgroundProcess::ProcessPool::ProcessDefinition)
 				.and different_than subject
 			)
 		end
@@ -37,14 +37,14 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 
 	describe '#instance' do
 		it 'should create new process instance' do
-			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			expect(RSpecBackgroundProcess::BackgroundProcess).to receive(:new)
 			.and_call_original
 
 			subject.instance
 		end
 
 		it 'should not crate new process when called more than once' do
-			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			expect(RSpecBackgroundProcess::BackgroundProcess).to receive(:new)
 			.once
 			.and_call_original
 
@@ -55,7 +55,7 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 
 	describe '#argument' do
 		it 'should pass given argument to process' do
-			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			expect(RSpecBackgroundProcess::BackgroundProcess).to receive(:new)
 			.with(anything, anything, a_collection_containing_exactly('foo bar', 'baz'), anything, anything)
 			.and_call_original
 
@@ -66,7 +66,7 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 		end
 
 		it 'should pass given option argument to process' do
-			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			expect(RSpecBackgroundProcess::BackgroundProcess).to receive(:new)
 			.with(anything, anything, a_collection_containing_exactly('--foo', 'bar', '--baz', 'hello world'), anything, anything)
 			.and_call_original
 
@@ -91,7 +91,7 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 
 			# actually used to extend background process
 			expect(extension).to receive(:extended) do |instance|
-				expect(instance).to be_an_instance_of(CucumberSpawnProcess::LoadedBackgroundProcess)
+				expect(instance).to be_an_instance_of(RSpecBackgroundProcess::LoadedBackgroundProcess)
 			end.once
 
 			process.instance
@@ -100,7 +100,7 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 
 	describe '#read_timeout' do
 		it 'should pass given argument to process' do
-			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			expect(RSpecBackgroundProcess::BackgroundProcess).to receive(:new)
 			.with(anything, anything, anything, anything, a_hash_including(ready_timeout: 42))
 			.and_call_original
 
@@ -112,7 +112,7 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 
 	describe '#term_timeout' do
 		it 'should pass given argument to process' do
-			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			expect(RSpecBackgroundProcess::BackgroundProcess).to receive(:new)
 			.with(anything, anything, anything, anything, a_hash_including(term_timeout: 42))
 			.and_call_original
 
@@ -124,7 +124,7 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 
 	describe '#kill_timeout' do
 		it 'should pass given argument to process' do
-			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			expect(RSpecBackgroundProcess::BackgroundProcess).to receive(:new)
 			.with(anything, anything, anything, anything, a_hash_including(kill_timeout: 42))
 			.and_call_original
 

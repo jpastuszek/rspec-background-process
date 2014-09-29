@@ -5,18 +5,18 @@ require_relative 'background_process'
 require_relative 'process_pool'
 
 # Just methods
-# config.include SpawnProcessCoreHelpers
-module SpawnProcessCoreHelpers
+# config.include BackgroundProcessCoreHelpers
+module BackgroundProcessCoreHelpers
 	def process_pool(options = {})
-		@@process_pool ||= CucumberSpawnProcess::ProcessPool.new(options)
+		@@process_pool ||= RSpecBackgroundProcess::ProcessPool.new(options)
 	end
 
 	def background_process(path, options = {})
-		CucumberSpawnProcess::ProcessPool::ProcessDefinition.new(
+		RSpecBackgroundProcess::ProcessPool::ProcessDefinition.new(
 			process_pool.pool,
 			options[:group] || 'default',
 			path,
-			options[:load] ? CucumberSpawnProcess::LoadedBackgroundProcess : CucumberSpawnProcess::BackgroundProcess,
+			options[:load] ? RSpecBackgroundProcess::LoadedBackgroundProcess : RSpecBackgroundProcess::BackgroundProcess,
 			process_pool.options
 		)
 	end
@@ -36,10 +36,10 @@ module SpawnProcessCoreHelpers
 end
 
 # RSpec specific cleanup
-# config.include SpawnProcessHelpers
-module SpawnProcessHelpers
+# config.include BackgroundProcessHelpers
+module BackgroundProcessHelpers
 	extend RSpec::Core::SharedContext
-	include SpawnProcessCoreHelpers
+	include BackgroundProcessCoreHelpers
 
 	after(:each) do
 		@@process_pool.cleanup
@@ -47,8 +47,8 @@ module SpawnProcessHelpers
 end
 
 # RSpec custom reporter
-# config.add_formatter FailedInstanceReporter
-class FailedInstanceReporter
+# config.add_formatter FailedBackgroundProcessReporter
+class FailedBackgroundProcessReporter
 	RSpec::Core::Formatters.register self, :example_failed
 
 	def initialize(output)
@@ -56,19 +56,19 @@ class FailedInstanceReporter
 	end
 
 	def example_failed(example)
-		@output << SpawnProcessCoreHelpers.report_failed_instance
+		@output << BackgroundProcessCoreHelpers.report_failed_instance
 	end
 end
 
 # RSpec setup
 RSpec.configure do |config|
-	config.include SpawnProcessHelpers, with: :background_process
-	config.add_formatter FailedInstanceReporter
+	config.include BackgroundProcessHelpers, with: :background_process
+	config.add_formatter FailedBackgroundProcessReporter
 end
 
 # Cucumber setup
 if respond_to?(:World) and respond_to?(:After)
-	World(SpawnProcessCoreHelpers)
+	World(BackgroundProcessCoreHelpers)
 
 	After do
 		process_pool.cleanup
@@ -76,7 +76,7 @@ if respond_to?(:World) and respond_to?(:After)
 
 	After do |scenario|
 		if scenario.failed?
-			SpawnProcessCoreHelpers.report_failed_instance
+			BackgroundProcessCoreHelpers.report_failed_instance
 		end
 	end
 end
@@ -91,5 +91,5 @@ end
 
 ## To report pool/LRU statistics at exit add this to env.rb
 # at_exit do
-#   SpawnProcessCoreHelpers.report_pool_stats
+#   BackgroundProcessCoreHelpers.report_pool_stats
 # end
