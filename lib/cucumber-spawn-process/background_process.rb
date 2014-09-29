@@ -372,14 +372,15 @@ module CucumberSpawnProcess
 
 		def daemonize(type = 'exec')
 			Daemon.daemonize(@pid_file, @log_file) do |log|
+				_command = command # render command
+
 				log.truncate(0)
 				Dir.chdir(@working_directory.to_s)
 
 				# useful for testing
 				ENV['PROCESS_SPAWN_TYPE'] = type
 
-				@pid = Process.pid
-				yield command
+				yield _command
 			end
 		end
 	end

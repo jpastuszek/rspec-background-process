@@ -41,6 +41,17 @@ feature 'instance variable replacement', subject: :process_ready_variables do
 			expect(instance.log_file.read).to include "ARGV: [\"name:#{instance.name}\"]"
 		end
 
+		scenario 'with project directory' do
+			instance = subject.with do |process|
+				process.argument 'project directory:<project directory>'
+			end.instance
+			instance.start.wait_ready
+
+			cwd = Dir.pwd
+
+			expect(instance.log_file.read).to include "ARGV: [\"project directory:#{cwd}\"]"
+		end
+
 		context 'server', subject: :http_process_ready_variables do
 			scenario 'with port numbers' do
 				instance = subject.with do |process|
