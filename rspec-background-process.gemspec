@@ -4,12 +4,12 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = "cucumber-spawn-process"
+  s.name = "rspec-background-process"
   s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jakub Pastuszek"]
-  s.date = "2014-09-08"
+  s.date = "2014-09-29"
   s.description = "Cucumber steps for spawning processes and HTTP servers for API testing or lunching stub backend. This steps can pool the background processes between scenarios. Readiness checks can be performed before tests can continue."
   s.email = "jpastuszek@gmail.com"
   s.extra_rdoc_files = [
@@ -25,31 +25,32 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
-    "features/background-process-cwd.feature",
-    "features/background-process-definition.feature",
-    "features/background-process-logging.feature",
-    "features/background-process-lru.feature",
-    "features/background-process-readiness.feature",
-    "features/background-process-reuse.feature",
-    "features/background-process-server.feature",
-    "features/loading-background-processes.feature",
-    "features/running-background-processes.feature",
-    "features/step_definitions/background_process_steps.rb",
-    "features/step_definitions/helper_steps.rb",
-    "features/support/env.rb",
-    "features/support/test_http_server",
-    "features/support/test_process",
-    "features/support/test_process2",
-    "features/support/test_start_fail",
-    "lib/cucumber-spawn-process.rb",
-    "lib/cucumber-spawn-process/background_process.rb",
-    "lib/cucumber-spawn-process/background_process_server.rb",
-    "lib/cucumber-spawn-process/background_process_steps.rb",
-    "lib/cucumber-spawn-process/process_pool.rb",
-    "spec/cucumber-spawn-process_spec.rb",
-    "spec/spec_helper.rb"
+    "lib/rspec-background-process.rb",
+    "lib/rspec-background-process/background_process.rb",
+    "lib/rspec-background-process/background_process_helpers.rb",
+    "lib/rspec-background-process/process_pool.rb",
+    "lib/rspec-background-process/readiness_checks.rb",
+    "lib/rspec-background-process/refresh_actions.rb",
+    "lib/rspec-background-process/server.rb",
+    "spec/background_process_spec.rb",
+    "spec/features/cwd_spec.rb",
+    "spec/features/dead_detection_spec.rb",
+    "spec/features/exec_and_loading_spec.rb",
+    "spec/features/pool_lru_spec.rb",
+    "spec/features/ready_test_spec.rb",
+    "spec/features/refresh_spec.rb",
+    "spec/features/reuse_spec.rb",
+    "spec/features/server_spec.rb",
+    "spec/features/variables_replacement_spec.rb",
+    "spec/process_definition_spec.rb",
+    "spec/spawn_process_helper_spec.rb",
+    "spec/spec_helper.rb",
+    "spec/support/test_die",
+    "spec/support/test_http_server",
+    "spec/support/test_process",
+    "spec/support/test_slow_die"
   ]
-  s.homepage = "http://github.com/jpastuszek/cucumber-spawn-process"
+  s.homepage = "http://github.com/jpastuszek/rspec-background-process"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.23"
@@ -60,8 +61,7 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<faraday>, [">= 0.8"])
-      s.add_development_dependency(%q<rspec>, ["~> 3.0"])
-      s.add_development_dependency(%q<cucumber>, [">= 0"])
+      s.add_development_dependency(%q<rspec>, ["~> 3.1"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.8.4"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0"])
       s.add_development_dependency(%q<daemon>, ["~> 1.2"])
@@ -71,8 +71,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<retries>, ["~> 0.0.5"])
     else
       s.add_dependency(%q<faraday>, [">= 0.8"])
-      s.add_dependency(%q<rspec>, ["~> 3.0"])
-      s.add_dependency(%q<cucumber>, [">= 0"])
+      s.add_dependency(%q<rspec>, ["~> 3.1"])
       s.add_dependency(%q<jeweler>, ["~> 1.8.4"])
       s.add_dependency(%q<bundler>, ["~> 1.0"])
       s.add_dependency(%q<daemon>, ["~> 1.2"])
@@ -83,8 +82,7 @@ Gem::Specification.new do |s|
     end
   else
     s.add_dependency(%q<faraday>, [">= 0.8"])
-    s.add_dependency(%q<rspec>, ["~> 3.0"])
-    s.add_dependency(%q<cucumber>, [">= 0"])
+    s.add_dependency(%q<rspec>, ["~> 3.1"])
     s.add_dependency(%q<jeweler>, ["~> 1.8.4"])
     s.add_dependency(%q<bundler>, ["~> 1.0"])
     s.add_dependency(%q<daemon>, ["~> 1.2"])

@@ -14,8 +14,8 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "cucumber-spawn-process"
-  gem.homepage = "http://github.com/jpastuszek/cucumber-spawn-process"
+  gem.name = "rspec-background-process"
+  gem.homepage = "http://github.com/jpastuszek/rspec-background-process"
   gem.license = "MIT"
   gem.summary = "Cucumber step library useful for managing background processes during testing"
   gem.description = "Cucumber steps for spawning processes and HTTP servers for API testing or lunching stub backend. This steps can pool the background processes between scenarios. Readiness checks can be performed before tests can continue."
@@ -35,7 +35,7 @@ Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "cucumber-spawn-process #{version}"
+  rdoc.title = "rspec-background-process #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
