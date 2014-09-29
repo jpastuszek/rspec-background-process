@@ -43,7 +43,7 @@ module CucumberSpawnProcess
 				process
 			end
 
-			def extend(mod, options)
+			def extend(mod, options = {})
 				@extensions << mod
 				@options.merge! options
 			end

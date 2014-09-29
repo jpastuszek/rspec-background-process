@@ -77,6 +77,27 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 		end
 	end
 
+	describe '#extend' do
+		it 'should extend instance with given extension' do
+			TestExtension = Module.new
+			extension = class_spy('TestExtension')
+
+			process = subject.with do |process|
+				process.extend extension
+			end
+
+			# used for key generation
+			expect(extension).to receive(:name).and_return('test')
+
+			# actually used to extend background process
+			expect(extension).to receive(:extended) do |instance|
+				expect(instance).to be_an_instance_of(CucumberSpawnProcess::LoadedBackgroundProcess)
+			end.once
+
+			process.instance
+		end
+	end
+
 	describe '#ready_test' do
 		it 'should register a block to be called when process is verified' do
 			expect { |b|
