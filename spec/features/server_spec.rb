@@ -1,6 +1,6 @@
 require_relative '../spec_helper'
 
-feature 'server process with port allocation', subject: :http_process do
+feature 'server process with port allocation', subject: :http_process_ready_variables do
 	scenario 'allocating port for new process instance form pool' do
 		instance = subject.with do |process|
 			process.http_port_allocated_form 1400, 4
@@ -25,7 +25,6 @@ feature 'server process with port allocation', subject: :http_process do
 
 	scenario 'using port number with argument value' do
 		instance = subject.with do |process|
-			process.ready_when_log_includes 'listening'
 			process.argument '--listen', 'localhost:<allocated port 1>'
 			process.http_port_allocated_form 1600, 1
 		end.instance

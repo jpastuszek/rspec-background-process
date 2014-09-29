@@ -35,6 +35,16 @@ module Instance
 	end
 end
 
+module HTTPProcessWithLoggedVariables
+	extend RSpec::Core::SharedContext
+
+	subject do
+		background_process('spec/support/test_http_server', group: "http_fresh[#{rand}]", load: true).with do |process|
+			process.ready_when_log_includes 'listening'
+		end
+	end
+end
+
 module HTTPProcess
 	extend RSpec::Core::SharedContext
 
@@ -67,6 +77,7 @@ RSpec.configure do |config|
 	config.include ProcessWithLoggedVariables, subject: :process_ready_variables
 	config.include Instance, subject: :instance
 	config.include HTTPProcess, subject: :http_process
+	config.include HTTPProcessWithLoggedVariables, subject: :http_process_ready_variables
 	config.include DyingProcess, subject: :dying_process
 	config.include SlowlyDyingProcess, subject: :slowly_dying_process
 
