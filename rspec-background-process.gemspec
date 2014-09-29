@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jakub Pastuszek"]
   s.date = "2014-09-29"
-  s.description = "Cucumber steps for spawning processes and HTTP servers for API testing or lunching stub backend. This steps can pool the background processes between scenarios. Readiness checks can be performed before tests can continue."
+  s.description = "RSpec and Cucumber DSL that allows definition of processes with their arguments, working directory, time outs, port numbers etc. and start/stop them during test runs. Processes with same definitions can pooled and reused between example runs to save time on startup/shutdown. Pooling supports process number limiting with LRU to limit memory used."
   s.email = "jpastuszek@gmail.com"
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -32,6 +32,8 @@ Gem::Specification.new do |s|
     "lib/rspec-background-process/readiness_checks.rb",
     "lib/rspec-background-process/refresh_actions.rb",
     "lib/rspec-background-process/server.rb",
+    "rspec-background-process.gemspec",
+    "spec/background_process_helpers_spec.rb",
     "spec/background_process_spec.rb",
     "spec/features/cwd_spec.rb",
     "spec/features/dead_detection_spec.rb",
@@ -43,7 +45,6 @@ Gem::Specification.new do |s|
     "spec/features/server_spec.rb",
     "spec/features/variables_replacement_spec.rb",
     "spec/process_definition_spec.rb",
-    "spec/spawn_process_helper_spec.rb",
     "spec/spec_helper.rb",
     "spec/support/test_die",
     "spec/support/test_http_server",
@@ -54,7 +55,7 @@ Gem::Specification.new do |s|
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.23"
-  s.summary = "Cucumber step library useful for managing background processes during testing"
+  s.summary = "RSpec and Cucumber DSL library that helps managing background processes during test runs"
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
