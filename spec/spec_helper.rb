@@ -17,6 +17,16 @@ module Process
 	end
 end
 
+module ProcessWithLoggedVariables
+	extend RSpec::Core::SharedContext
+
+	subject! do
+		background_process('spec/support/test_process', group: "fresh[#{rand}]", load: true).with do |process|
+			process.ready_when_log_includes 'hello world'
+		end
+	end
+end
+
 module Instance
 	extend RSpec::Core::SharedContext
 
@@ -49,12 +59,12 @@ module SlowlyDyingProcess
 	end
 end
 
-
 RSpec::Matchers.define_negated_matcher :different_than, :be
 
 RSpec.configure do |config|
 	config.include SpawnProcessHelpers
 	config.include Process, subject: :process
+	config.include ProcessWithLoggedVariables, subject: :process_ready_variables
 	config.include Instance, subject: :instance
 	config.include HTTPProcess, subject: :http_process
 	config.include DyingProcess, subject: :dying_process
