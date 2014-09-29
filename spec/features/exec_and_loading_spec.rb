@@ -1,6 +1,6 @@
 require_relative '../spec_helper'
 
-feature 'support for starting new process via fort to exec or fork followed by Ruby load' do
+feature 'support for starting new process via fort to exec or fork followed by Ruby load', with: :background_process do
 	context 'default value is used' do
 		scenario 'replace forked ruby interpreter with given executable via exec' do
 			process = background_process('spec/support/test_process')

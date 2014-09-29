@@ -72,16 +72,26 @@ end
 RSpec::Matchers.define_negated_matcher :different_than, :be
 
 RSpec.configure do |config|
-	config.include SpawnProcessHelpers
 	config.include Process, subject: :process
-	config.include ProcessWithLoggedVariables, subject: :process_ready_variables
-	config.include Instance, subject: :instance
-	config.include HTTPProcess, subject: :http_process
-	config.include HTTPProcessWithLoggedVariables, subject: :http_process_ready_variables
-	config.include DyingProcess, subject: :dying_process
-	config.include SlowlyDyingProcess, subject: :slowly_dying_process
+	config.include SpawnProcessHelpers, subject: :process
 
-	config.add_formatter FailedInstanceReporter
+	config.include ProcessWithLoggedVariables, subject: :process_ready_variables
+	config.include SpawnProcessHelpers, subject: :process_ready_variables
+
+	config.include Instance, subject: :instance
+	config.include SpawnProcessHelpers, subject: :instance
+
+	config.include HTTPProcess, subject: :http_process
+	config.include SpawnProcessHelpers, subject: :http_process
+
+	config.include HTTPProcessWithLoggedVariables, subject: :http_process_ready_variables
+	config.include SpawnProcessHelpers, subject: :http_process_ready_variables
+
+	config.include DyingProcess, subject: :dying_process
+	config.include SpawnProcessHelpers, subject: :dying_process
+
+	config.include SlowlyDyingProcess, subject: :slowly_dying_process
+	config.include SpawnProcessHelpers, subject: :slowly_dying_process
 
 	config.alias_example_group_to :feature
 	config.alias_example_to :scenario

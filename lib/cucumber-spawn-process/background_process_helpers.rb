@@ -60,6 +60,12 @@ class FailedInstanceReporter
 	end
 end
 
+# RSpec setup
+RSpec.configure do |config|
+	config.include SpawnProcessHelpers, with: :background_process
+	config.add_formatter FailedInstanceReporter
+end
+
 # Cucumber setup
 if respond_to?(:World) and respond_to?(:After)
 	World(SpawnProcessCoreHelpers)

@@ -1,6 +1,6 @@
 require_relative 'spec_helper'
 
-describe SpawnProcessHelpers do
+describe SpawnProcessHelpers, with: :background_process do
 	describe '#process_pool' do
 		it 'should provide singleton pool object ' do
 			expect {
