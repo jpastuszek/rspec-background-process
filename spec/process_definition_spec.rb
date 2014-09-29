@@ -98,6 +98,42 @@ describe CucumberSpawnProcess::ProcessPool::ProcessDefinition, subject: :process
 		end
 	end
 
+	describe '#read_timeout' do
+		it 'should pass given argument to process' do
+			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			.with(anything, anything, anything, anything, a_hash_including(ready_timeout: 42))
+			.and_call_original
+
+			subject.ready_timeout 42
+
+			subject.instance
+		end
+	end
+
+	describe '#term_timeout' do
+		it 'should pass given argument to process' do
+			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			.with(anything, anything, anything, anything, a_hash_including(term_timeout: 42))
+			.and_call_original
+
+			subject.term_timeout 42
+
+			subject.instance
+		end
+	end
+
+	describe '#kill_timeout' do
+		it 'should pass given argument to process' do
+			expect(CucumberSpawnProcess::BackgroundProcess).to receive(:new)
+			.with(anything, anything, anything, anything, a_hash_including(kill_timeout: 42))
+			.and_call_original
+
+			subject.kill_timeout 42
+
+			subject.instance
+		end
+	end
+
 	describe '#ready_test' do
 		it 'should register a block to be called when process is verified' do
 			expect { |b|
