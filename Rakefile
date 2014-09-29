@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "rspec-background-process"
   gem.homepage = "http://github.com/jpastuszek/rspec-background-process"
   gem.license = "MIT"
-  gem.summary = "Cucumber step library useful for managing background processes during testing"
-  gem.description = "Cucumber steps for spawning processes and HTTP servers for API testing or lunching stub backend. This steps can pool the background processes between scenarios. Readiness checks can be performed before tests can continue."
+  gem.summary = "RSpec and Cucumber DSL library that helps managing background processes during test runs"
+  gem.description = "RSpec and Cucumber DSL that allows definition of processes with their arguments, working directory, time outs, port numbers etc. and start/stop them during test runs. Processes with same definitions can pooled and reused between example runs to save time on startup/shutdown. Pooling supports process number limiting with LRU to limit memory used."
   gem.email = "jpastuszek@gmail.com"
   gem.authors = ["Jakub Pastuszek"]
   # dependencies defined in Gemfile
