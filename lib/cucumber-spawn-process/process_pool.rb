@@ -64,6 +64,18 @@ module CucumberSpawnProcess
 				@options[:refresh_action] = block
 			end
 
+			def ready_timeout(seconds)
+				@options[:ready_timeout] = seconds
+			end
+
+			def term_timeout(seconds)
+				@options[:term_timeout] = seconds
+			end
+
+			def kill_timeout(seconds)
+				@options[:kill_timeout] = seconds
+			end
+
 			def working_directory(dir)
 				@working_directory = dir
 			end
