@@ -1,7 +1,7 @@
 # rspec-background-process
 
 RSpec and Cucumber DSL that allows definition of processes with their arguments, working directory, time outs, port numbers etc. and start/stop them during test runs.
-Processes with same definitions can be pooled and reused between example runs to save time on startup/shutdown. Pooling supports running process number limiting with LRU to limit memory used.
+Processes with same definitions can be pooled and reused between example runs to save time on startup/shutdown. Pooling supports limiting the number of running processes with LRU to limit memory used.
 
 ## Example Usage
 
@@ -19,12 +19,12 @@ end
 .wait_ready
 ```
 
-The above example will start up (or reuse) instance of http-worker process with given arguments and allocated unique port number. 
-The `#wait_ready` method will return after process logs to standard output or error 'worker=0 ready' string. This way the process has a chance of starting up fully before we continue with testing.
+The above example will start up (or reuse) instance of `http-worker` process with given arguments and allocated unique port number. 
+The `#wait_ready` method will return after process logs `worker=0 ready` to standard output or error. This way the process has a chance of starting up fully before we continue with testing.
 
 ## Usage with RSpec
 
-Just `require 'rspec-background-process'` in your `spec_helper.rb` and use `with: :background_process` meta tag on example groups that will use `#backgroud_process`.
+Add `require 'rspec-background-process'` to your `spec_helper.rb` and use `with: :background_process` meta tag on example groups that will use `#backgroud_process`.
 
 ```ruby
 require_relative 'spec_helper'
@@ -45,7 +45,7 @@ end
 
 ## Usage with Cucumber
 
-Just `require 'rspec-background-process'` in your `env.rb`.
+Add `require 'rspec-background-process'` to your `env.rb`.
 
 ```ruby
 Given /^my server is running$/ do
