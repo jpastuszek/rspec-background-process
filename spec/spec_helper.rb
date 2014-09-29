@@ -12,7 +12,7 @@ require 'rspec/core/shared_context'
 module Process
 	extend RSpec::Core::SharedContext
 
-	subject! do
+	subject do
 		background_process('spec/support/test_process', group: "fresh[#{rand}]", load: true)
 	end
 end
@@ -20,7 +20,7 @@ end
 module ProcessWithLoggedVariables
 	extend RSpec::Core::SharedContext
 
-	subject! do
+	subject do
 		background_process('spec/support/test_process', group: "fresh[#{rand}]", load: true).with do |process|
 			process.ready_when_log_includes 'hello world'
 		end
@@ -30,7 +30,7 @@ end
 module Instance
 	extend RSpec::Core::SharedContext
 
-	subject! do
+	subject do
 		background_process('spec/support/test_process', group: "fresh[#{rand}]", load: true).instance
 	end
 end
@@ -38,7 +38,7 @@ end
 module HTTPProcess
 	extend RSpec::Core::SharedContext
 
-	subject! do
+	subject do
 		background_process('spec/support/test_http_server', group: "http_fresh[#{rand}]", load: true)
 	end
 end
@@ -46,7 +46,7 @@ end
 module DyingProcess
 	extend RSpec::Core::SharedContext
 
-	subject! do
+	subject do
 		background_process('spec/support/test_die', group: "die[#{rand}]", load: true)
 	end
 end
@@ -54,7 +54,7 @@ end
 module SlowlyDyingProcess
 	extend RSpec::Core::SharedContext
 
-	subject! do
+	subject do
 		background_process('spec/support/test_slow_die', group: "slow_die[#{rand}]", load: true)
 	end
 end
@@ -69,6 +69,8 @@ RSpec.configure do |config|
 	config.include HTTPProcess, subject: :http_process
 	config.include DyingProcess, subject: :dying_process
 	config.include SlowlyDyingProcess, subject: :slowly_dying_process
+
+	config.add_formatter FailedInstanceReporter
 
 	config.alias_example_group_to :feature
 	config.alias_example_to :scenario
