@@ -342,12 +342,12 @@ module CucumberSpawnProcess
 				puts "State: #{failed_instance.state}"
 				puts "Exit code: #{failed_instance.exit_code}"
 			else
-				puts "No instance in failed state"
+				puts "No process instance in failed state"
 			end
 		end
 
 		def report_logs
-			puts "Logs:"
+			puts "Process instance logs:"
 			@pool.instances.each do |instance|
 				puts "#{instance.name}: #{instance.log_file}"
 			end
