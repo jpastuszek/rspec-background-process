@@ -301,7 +301,7 @@ module CucumberSpawnProcess
 			@options[:logging]
 		end
 
-		def reset_active
+		def cleanup
 			@pool.reset_active
 		end
 

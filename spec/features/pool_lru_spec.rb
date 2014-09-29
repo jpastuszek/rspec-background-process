@@ -13,7 +13,7 @@ feature 'process pool can keep limited number of processes running between test 
 		expect(instances).to all be_running
 
 		# let LRU do the job (executed after each scenario/example)
-		process_pool.reset_active
+		process_pool.cleanup
 
 		# first instance should not be running (LRU)
 		expect(instances.shift).not_to be_running

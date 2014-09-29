@@ -30,7 +30,7 @@ module SpawnProcessHelpers
 	end
 
 	after(:each) do
-		@@process_pool.reset_active
+		@@process_pool.cleanup
 	end
 end
 
