@@ -1,10 +1,13 @@
 require 'rspec'
 require 'rspec/core/formatters'
+require 'rspec/core/shared_context'
 require_relative 'background_process'
 require_relative 'process_pool'
 
 # config.include SpawnProcessHelpers
 module SpawnProcessHelpers
+	extend RSpec::Core::SharedContext
+
 	def process_pool(options = {})
 		@@process_pool ||= CucumberSpawnProcess::ProcessPool.new(options)
 	end
@@ -24,6 +27,10 @@ module SpawnProcessHelpers
 
 		@@process_pool.report_failed_instance
 		@@process_pool.report_logs
+	end
+
+	after(:each) do
+		@@process_pool.reset_active
 	end
 end
 
