@@ -51,7 +51,7 @@ module RSpecBackgroundProcess
 
 			case working_directory
 			when Array
-				working_directory = Dir.mktmpdir(working_directory)
+				working_directory = Dir.mktmpdir(working_directory.map(&:to_s))
 			when nil
 				working_directory = Dir.mktmpdir(name.to_s)
 			end
